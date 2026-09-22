@@ -1,0 +1,184 @@
+{
+  "fig0027": {
+    "reference": [
+      0.025810036417856265,
+      0.004024717018496307,
+      0.018464403349299663,
+      0.026945101344246304,
+      0.013891963765978982
+    ],
+    "counts": {
+      "0": 397157,
+      "1": 124836,
+      "2": 749762,
+      "3": 202809,
+      "4": 1197628,
+      "5": 115360
+    },
+    "maskBytes": 15157,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "f50ebbf3efa468608511193a88e602f45c42fbcf1841feea1f4b03093bf521f5",
+    "vertices": 8622,
+    "triangles": 14478,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "fig0098": {
+    "reference": [
+      0.09305896284668747,
+      0.033064961721644345,
+      0.01998511806080753,
+      0.12,
+      0.0036281691704584274
+    ],
+    "counts": {
+      "0": 437221,
+      "1": 1265412,
+      "2": 637868,
+      "3": 324060,
+      "4": 0,
+      "5": 245178
+    },
+    "maskBytes": 12167,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "2ec6c2a70b7b47a2624700e9954a4b0c52d5c225fcfad7dd356bc3f4d60b33ae",
+    "vertices": 11395,
+    "triangles": 20714,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "fig0143": {
+    "reference": [
+      0.12,
+      0.004211120036725068,
+      0.06314106786032535,
+      0.18712611184000044,
+      0.12031163035540945
+    ],
+    "counts": {
+      "0": 166566,
+      "1": 0,
+      "2": 987053,
+      "3": 173777,
+      "4": 1447560,
+      "5": 282939
+    },
+    "maskBytes": 15169,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "22dcf201937d62497d64f25b73d6f31aa9a903ffae587dc39fd01f035c14970a",
+    "vertices": 12183,
+    "triangles": 21476,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "fig0147": {
+    "reference": [
+      0.23551259589354587,
+      0.13098008370659708,
+      0.3809656105000415,
+      0.11699600412810555,
+      0.019191502599312533
+    ],
+    "counts": {
+      "0": 267114,
+      "1": 434183,
+      "2": 801035,
+      "3": 142365,
+      "4": 1037359,
+      "5": 227965
+    },
+    "maskBytes": 16184,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "7d764f053dc132665d4853567dfe55db2b90197a867666b65916db0aba86e10a",
+    "vertices": 16680,
+    "triangles": 30002,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "fig0151": {
+    "reference": [
+      0.003387296613932108,
+      0.0113881415932256,
+      0.3123989803975417,
+      0.05578874845259784,
+      0.0564648007347315
+    ],
+    "counts": {
+      "0": 217678,
+      "1": 202693,
+      "2": 765478,
+      "3": 184563,
+      "4": 1484915,
+      "5": 174502
+    },
+    "maskBytes": 14653,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "e5250be50ecda511a1c9aaa882cbd1117a5a860299a9afd7e2d056f94df8940c",
+    "vertices": 12055,
+    "triangles": 21134,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "fig0160": {
+    "reference": [
+      0.0070696161052896216,
+      0.0918001799052342,
+      0.030310308767661005,
+      0.11069749731407888,
+      0.025571958182284596
+    ],
+    "counts": {
+      "0": 304501,
+      "1": 558533,
+      "2": 796771,
+      "3": 236287,
+      "4": 978325,
+      "5": 108454
+    },
+    "maskBytes": 18262,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "ad5e0f4adceadcc53f1d1cc78da30bbd23dcb1fca28c6ed3440edb5ded967155",
+    "vertices": 17984,
+    "triangles": 32640,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "fig0165": {
+    "reference": [
+      0.0035145410452692193,
+      0.012855291709709815,
+      0.29120248206405347,
+      0.021416856601919415,
+      0.11819473037082508
+    ],
+    "counts": {
+      "0": 272696,
+      "1": 132102,
+      "2": 1379794,
+      "3": 120766,
+      "4": 855504,
+      "5": 182233
+    },
+    "maskBytes": 15151,
+    "protectedParts": "face, hands, exposed neck and skin islands remain uncolored",
+    "sourceSha256": "c70471060c2e383b23fe95847779742caba689f9333588cc33ff48104e2060ed",
+    "vertices": 12455,
+    "triangles": 22056,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  }
+}
