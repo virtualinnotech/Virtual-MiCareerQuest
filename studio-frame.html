@@ -11,7 +11,7 @@
 .ship-truck{animation:shipDrive 2.8s ease-in-out infinite}
 @keyframes shipDrive{0%{transform:translateX(-40px)}42%{transform:translateX(-40px)}100%{transform:translateX(340px)}}
 .ship-package{animation:shipLoad 2.8s ease-in-out infinite}
-@keyframes shipLoad{0%{transform:translate(0,-8px) rotate(0deg);opacity:1}24%{transform:translate(-18px,40px) rotate(12deg);opacity:1}30%,100%{transform:translate(-18px,40px) rotate(12deg);opacity:0}}
+@keyframes shipLoad{0%{transform:translate(0,-8px) rotate(0deg);opacity:1}24%{transform:translate(0,40px) rotate(10deg);opacity:1}30%,100%{transform:translate(0,40px) rotate(10deg);opacity:0}}
 .ship-overlay-text{color:#eaf1ff;font:600 15px/1.5 system-ui;margin:0}
 .ship-overlay-sub{color:#8fa9bd;font:13px system-ui;margin:6px 0 0}
 </style></head><body>
@@ -20,14 +20,14 @@
   <svg class="ship-scene" viewBox="0 0 360 150" width="300" height="125" aria-hidden="true">
    <line x1="0" y1="128" x2="360" y2="128" stroke="#2c3e4e" stroke-width="2" stroke-dasharray="9 7"/>
    <g class="ship-truck">
-    <rect x="0" y="66" width="38" height="34" rx="4" fill="#0c7580"/>
-    <rect x="5" y="72" width="16" height="13" rx="2" fill="#bfe9ec"/>
-    <rect x="40" y="46" width="68" height="54" rx="3" fill="#f2f5f6" stroke="#0c7580" stroke-width="2"/>
-    <rect class="ship-package" x="62" y="8" width="24" height="24" rx="2" fill="#e8a33d" stroke="#8a5a12" stroke-width="1.5"/>
-    <line x1="70" y1="8" x2="70" y2="32" stroke="#8a5a12" stroke-width="1.5"/>
-    <line x1="62" y1="18" x2="86" y2="18" stroke="#8a5a12" stroke-width="1.5"/>
-    <circle cx="17" cy="103" r="10" fill="#19394b"/>
-    <circle cx="92" cy="103" r="10" fill="#19394b"/>
+    <rect x="70" y="66" width="38" height="34" rx="4" fill="#0c7580"/>
+    <rect x="87" y="72" width="16" height="13" rx="2" fill="#bfe9ec"/>
+    <rect x="0" y="46" width="68" height="54" rx="3" fill="#f2f5f6" stroke="#0c7580" stroke-width="2"/>
+    <rect class="ship-package" x="22" y="8" width="24" height="24" rx="2" fill="#e8a33d" stroke="#8a5a12" stroke-width="1.5"/>
+    <line x1="38" y1="8" x2="38" y2="32" stroke="#8a5a12" stroke-width="1.5"/>
+    <line x1="22" y1="18" x2="46" y2="18" stroke="#8a5a12" stroke-width="1.5"/>
+    <circle cx="91" cy="103" r="10" fill="#19394b"/>
+    <circle cx="16" cy="103" r="10" fill="#19394b"/>
    </g>
   </svg>
   <p class="ship-overlay-text">Please hang tight -- your booth is being shipped...</p>
