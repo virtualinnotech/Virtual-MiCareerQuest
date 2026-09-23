@@ -22,7 +22,12 @@ export async function onRequestGet(context) {
     )
     .all();
 
-  const response = json({ generatedAt: new Date().toISOString(), booths: rows.results });
+  const booths = rows.results.map((b) => ({
+    ...b,
+    assetUrl: b.booth_asset_key ? `/${b.booth_asset_key}` : null,
+  }));
+
+  const response = json({ generatedAt: new Date().toISOString(), booths });
   response.headers.set('Cache-Control', 'public, max-age=30');
   context.waitUntil(cache.put(cacheKey, response.clone()));
   return response;

@@ -1,8 +1,9 @@
-import { json, badRequest } from '../_lib.js';
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { json, badRequest, EMAIL_RE, claimOrRecognize } from '../_lib.js';
 
 // The "take a number" step. One link, everyone hits this same endpoint.
+// (The studio's "Ship to venue" button now does this itself in one call --
+// this standalone endpoint stays for the check-spots-first landing page and
+// for anyone testing the flow before opening the full 3D studio.)
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -24,48 +25,15 @@ export async function onRequestPost(context) {
     return badRequest('That does not look like a valid email address.');
   }
 
-  const db = env.DB;
-
-  // Returning employer: this email already owns a slot. Send them back to
-  // it instead of letting them claim a second one.
-  const existing = await db
-    .prepare('SELECT sector, slot_number, status FROM slots WHERE email = ?')
-    .bind(email)
-    .first();
-  if (existing) {
-    return json({
-      sector: existing.sector,
-      slotNumber: existing.slot_number,
-      status: existing.status,
-      returning: true,
-    });
-  }
-
-  // Atomic claim. This single UPDATE...RETURNING targets the lowest-numbered
-  // open slot in the chosen sector. D1 serializes writes to a database, so
-  // two employers submitting in the same instant cannot both land on the
-  // same slot number -- one of them will simply see the next slot up (or a
-  // "full" response if that was the last one).
-  const claimed = await db
-    .prepare(
-      `UPDATE slots
-          SET status = 'claimed', company_name = ?, email = ?, claimed_at = datetime('now')
-        WHERE rowid = (
-          SELECT rowid FROM slots WHERE sector = ? AND status = 'open' ORDER BY slot_number LIMIT 1
-        )
-        RETURNING sector, slot_number`
-    )
-    .bind(companyName, email, sector)
-    .first();
-
-  if (!claimed) {
+  const result = await claimOrRecognize(env.DB, { sector, email, companyName });
+  if (!result) {
     return badRequest(`"${sector}" is full. Please choose a different sector.`, 409);
   }
 
   return json({
-    sector: claimed.sector,
-    slotNumber: claimed.slot_number,
-    status: 'claimed',
-    returning: false,
+    sector: result.sector,
+    slotNumber: result.slot_number,
+    status: result.status,
+    returning: result.returning,
   });
 }
