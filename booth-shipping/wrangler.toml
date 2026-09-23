@@ -7,7 +7,7 @@ compatibility_date = "2024-09-23"
 [[d1_databases]]
 binding = "DB"
 database_name = "micareerquest-slots"
-database_id = "local-mock"
+database_id = "dd008013-e814-4ff1-8f65-4307ce40279b"
 
 # Create with: npx wrangler r2 bucket create micareerquest-booths
 [[r2_buckets]]
