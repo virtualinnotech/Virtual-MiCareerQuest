@@ -1901,10 +1901,18 @@ async function shipToLiveVenue(packet,data){
  if(!res.ok)throw Error(body.error||('Shipping failed ('+res.status+').'));
  return body;
 }
+// Animated "..." on a base message so a slow step (loading the full local
+// venue scene, below) reads as "still working" instead of frozen. Call the
+// returned function to stop it once that step finishes.
+function tickingStatus(base){
+ let n=0;status(base+'.');
+ const id=setInterval(()=>status(base+'.'.repeat((n++%3)+1)),450);
+ return ()=>clearInterval(id);
+}
 async function setupShipping(){
  if(!window.BoothStudio){setTimeout(setupShipping,60);return;}
  $('exportGlb').textContent='Ship to venue';$('exportGlb').disabled=false;
- $('exportGlb').onclick=async()=>{const btn=$('exportGlb');btn.disabled=true;try{status('Preparing your booth for DeVos Place...');await new Promise(r=>setTimeout(r,30));const packet=await makeShipmentPacket();const data=getData();status('Shipping to the live venue...');let live=null,liveError=null;try{live=await shipToLiveVenue(packet,data);}catch(err){liveError=err;}status('Placing your booth in your local preview...');const response=await studioCall('SHIP_BOOTH',packet);currentShipmentId=packet.id;updateShipButton();if(live)status('Live for students -- '+live.sector+' booth #'+live.slotNumber+'. Use View venue to see your local preview.');else status('Local preview updated, but shipping to the live venue failed: '+(liveError?.message||'unknown error')+'. Fix this before the fair -- students will not see this booth yet.',true);}catch(e){status(e.message,true);}finally{btn.disabled=false;}};
+ $('exportGlb').onclick=async()=>{const btn=$('exportGlb');btn.disabled=true;try{status('Preparing your booth for DeVos Place...');await new Promise(r=>setTimeout(r,30));const packet=await makeShipmentPacket();const data=getData();status('Shipping to the live venue...');let live=null,liveError=null;try{live=await shipToLiveVenue(packet,data);}catch(err){liveError=err;}const stopTicker=tickingStatus('Hold tight! Hauling your booth over to DeVos Place -- this can take up to a minute the first time');const response=await studioCall('SHIP_BOOTH',packet);stopTicker();currentShipmentId=packet.id;updateShipButton();if(live)status('Live for students -- '+live.sector+' booth #'+live.slotNumber+'. Use View venue to see your local preview.');else status('Local preview updated, but shipping to the live venue failed: '+(liveError?.message||'unknown error')+'. Fix this before the fair -- students will not see this booth yet.',true);}catch(e){status(e.message,true);}finally{btn.disabled=false;}};
  $('newEmployer').onclick=()=>{resetInformationControls();currentShipmentId=null;updateShipButton();$('boothName').value='';$('contactName').value='';$('contactEmail').value='';projectImages={logo:null,photos:[]};$('logoMode').value='flanked';$('logoOnCounter').checked=true;for(const id of ['website','videoLink','resourceTitle','resourceUrl','logoFile','photoFiles'])$(id).value='';$('randomDesign').click();status('New employer draft. Your previously shipped booths remain in the venue.');$('boothName').focus();};
  $('viewVenue').onclick=()=>studioCall('SHOW_VENUE',null).catch(e=>status(e.message,true));
  $('projectFile').addEventListener('change',()=>{currentShipmentId=null;updateShipButton();});
