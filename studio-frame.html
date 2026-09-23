@@ -4,7 +4,36 @@
 @media(max-width:780px){header{padding:12px 15px;height:auto;min-height:80px}h1{font-size:17px}.local{font-size:10px;max-width:140px}.shell{height:auto;display:flex;flex-direction:column-reverse}.shell main{height:58vh;min-height:380px;position:sticky;top:0;z-index:2}aside{overflow:visible;border-right:0}.toolbar{padding:10px}.toolbar h3{font-size:12px}.legend{right:10px;top:10px;font-size:10px;max-width:180px}.helpTag{left:10px;bottom:10px;font-size:10px}.statusbar{font-size:11px}aside h2{margin-top:18px}}
 .check{display:flex;align-items:center;gap:8px;font-weight:500;font-size:11px}.check input{width:15px!important;min-width:15px!important;height:15px;margin:0}.design-id{margin-top:12px;background:#edf5f4;border:1px solid #d0e2df;border-radius:8px;padding:10px 12px;font-family:monospace;font-size:13px;color:#215950}.design-id small{display:block;font-family:system-ui;font-size:10px;margin-top:4px;color:#596f70}.local strong{color:#b8e4cd}button.primary:hover{background:#075c68}#setTools[hidden]{display:none}input[hidden]{display:none!important}#makeSet{width:100%;font-size:12px;padding:11px 4px}
 .brand-card{background:#f3f8f8;border:1px solid #d4e3e4;padding:12px;border-radius:9px;margin-top:12px}.brand-card>label:first-child{margin-top:0}#logoPreviewRow{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:8px 0}#logoPreviewRow[hidden]{display:none}#logoPreview{max-width:88px;height:46px;object-fit:contain;background:#fff;border:1px solid #d8e4e5;border-radius:5px;padding:4px}#logoFilename{font-size:10px;max-width:120px;overflow-wrap:anywhere}#removeLogo{font-size:10px;padding:6px}
+.ship-overlay{position:fixed;inset:0;background:rgba(8,16,24,.74);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px)}
+.ship-overlay[hidden]{display:none}
+.ship-overlay-card{background:#0f1b24;border-radius:18px;padding:30px 34px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.45);max-width:380px}
+.ship-scene{display:block;margin:0 auto 16px;overflow:visible}
+.ship-truck{animation:shipDrive 2.8s ease-in-out infinite}
+@keyframes shipDrive{0%{transform:translateX(-40px)}42%{transform:translateX(-40px)}100%{transform:translateX(340px)}}
+.ship-package{animation:shipLoad 2.8s ease-in-out infinite}
+@keyframes shipLoad{0%{transform:translate(0,-8px) rotate(0deg);opacity:1}24%{transform:translate(-18px,40px) rotate(12deg);opacity:1}30%,100%{transform:translate(-18px,40px) rotate(12deg);opacity:0}}
+.ship-overlay-text{color:#eaf1ff;font:600 15px/1.5 system-ui;margin:0}
+.ship-overlay-sub{color:#8fa9bd;font:13px system-ui;margin:6px 0 0}
 </style></head><body>
+<div id="shipOverlay" class="ship-overlay" hidden aria-live="polite" role="status">
+ <div class="ship-overlay-card">
+  <svg class="ship-scene" viewBox="0 0 360 150" width="300" height="125" aria-hidden="true">
+   <line x1="0" y1="128" x2="360" y2="128" stroke="#2c3e4e" stroke-width="2" stroke-dasharray="9 7"/>
+   <g class="ship-truck">
+    <rect x="0" y="66" width="38" height="34" rx="4" fill="#0c7580"/>
+    <rect x="5" y="72" width="16" height="13" rx="2" fill="#bfe9ec"/>
+    <rect x="40" y="46" width="68" height="54" rx="3" fill="#f2f5f6" stroke="#0c7580" stroke-width="2"/>
+    <rect class="ship-package" x="62" y="8" width="24" height="24" rx="2" fill="#e8a33d" stroke="#8a5a12" stroke-width="1.5"/>
+    <line x1="70" y1="8" x2="70" y2="32" stroke="#8a5a12" stroke-width="1.5"/>
+    <line x1="62" y1="18" x2="86" y2="18" stroke="#8a5a12" stroke-width="1.5"/>
+    <circle cx="17" cy="103" r="10" fill="#19394b"/>
+    <circle cx="92" cy="103" r="10" fill="#19394b"/>
+   </g>
+  </svg>
+  <p class="ship-overlay-text">Please hang tight -- your booth is being shipped...</p>
+  <p class="ship-overlay-sub" id="shipOverlaySub"></p>
+ </div>
+</div>
 <header><div><small>MiCAREERQUEST</small><h1>Employer Booth Studio <span style="font-size:12px;color:#a6d9e0">v3</span></h1></div><div class="local"><strong>LOCAL TEST</strong><br>Connected to this local venue</div></header>
 <div class="shell"><aside>
 <h2><span class="sectionNo">01</span>Your company</h2><p class="hint">Try a made-up company first. Nothing here is submitted or emailed.</p>
@@ -1808,7 +1837,9 @@ const palettes=studioPalettes;let legacyPaletteOverride=null;
 let allocatedSet=null,usedSignatures=new Set();
 const $=id=>document.getElementById(id);let currentBooth=null,projectImages={logo:null,photos:[]},currentTemplate=null,updateTimer;
 const formFields=['boothName','contactName','contactEmail','website','industry','videoLink','resourceTitle','resourceUrl','size','primary','secondary','accent','logoMode','tvMode','tvPosition','contactPosition','resourcePosition','informationSeed'];
-function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
+function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);const sub=$('shipOverlaySub');if(sub)sub.textContent=text;}
+function showShipOverlay(){const o=$('shipOverlay');if(o)o.hidden=false;}
+function hideShipOverlay(){const o=$('shipOverlay');if(o)o.hidden=true;}
 function getData(){return{boothName:$('boothName').value.trim().slice(0,70),contactName:$('contactName').value.trim().slice(0,70),contactEmail:$('contactEmail').value.trim().slice(0,120),website:$('website').value.trim(),videoLink:$('videoLink').value.trim(),industry:$('industry').value,contactPhone:'',logoMode:$('logoMode').value,tvMode:$('tvMode').value,tvPosition:$('tvPosition').value,contactPosition:$('contactPosition').value,resourcePosition:$('resourcePosition').value,informationSeed:Number($('informationSeed').value)||0,resources:[{title:$('resourceTitle').value.trim(),url:$('resourceUrl').value.trim()}].filter(r=>r.title||r.url)};}
 function templateFor(index,paletteIndex){
  if(String(index).startsWith('legacy:')){const i=Number(String(index).split(':')[1]),d=designs[i],p=legacyPaletteOverride||palettes[paletteIndex];return{id:'cf-'+String(i+1).padStart(3,'0'),index:i+1,name:d[0],family:'MiCareerQuest legacy',useLegacy:true,legacyIndex:i,layout:d[1],canopy:d[2],counter:d[3],motif:d[4],architecture:d[5],style:d[6]?'greenReference':'standard',greenFeature:d[6]||null,screen:i%3===0?'left':i%3===1?'right':'wide',size:$('size').value,palette:{primary:$('primary').value,secondary:$('secondary').value,accent:$('accent').value,wall:p[4],trim:p[5],floor:p[6]}};}
@@ -3759,7 +3790,7 @@ function tickingStatus(base){
 async function setupShipping(){
  if(!window.BoothStudio){setTimeout(setupShipping,60);return;}
  $('exportGlb').textContent='Ship to venue';$('exportGlb').disabled=false;
- $('exportGlb').onclick=async()=>{const btn=$('exportGlb');btn.disabled=true;try{status('Preparing your booth for DeVos Place...');await new Promise(r=>setTimeout(r,30));const packet=await makeShipmentPacket();const data=getData();status('Shipping to the live venue...');let live=null,liveError=null;try{live=await shipToLiveVenue(packet,data);}catch(err){liveError=err;}const stopTicker=tickingStatus('Hold tight! Hauling your booth over to DeVos Place -- this can take up to a minute the first time');const response=await studioCall('SHIP_BOOTH',packet);stopTicker();currentShipmentId=packet.id;updateShipButton();if(live)status('Live for students -- '+live.sector+' booth #'+live.slotNumber+'. Use View venue to see your local preview.');else status('Local preview updated, but shipping to the live venue failed: '+(liveError?.message||'unknown error')+'. Fix this before the fair -- students will not see this booth yet.',true);}catch(e){status(e.message,true);}finally{btn.disabled=false;}};
+ $('exportGlb').onclick=async()=>{const btn=$('exportGlb');btn.disabled=true;showShipOverlay();try{status('Preparing your booth for DeVos Place...');await new Promise(r=>setTimeout(r,30));const packet=await makeShipmentPacket();const data=getData();status('Shipping to the live venue...');let live=null,liveError=null;try{live=await shipToLiveVenue(packet,data);}catch(err){liveError=err;}const stopTicker=tickingStatus('Hold tight! Hauling your booth over to DeVos Place -- this can take up to a minute the first time');const response=await studioCall('SHIP_BOOTH',packet);stopTicker();hideShipOverlay();currentShipmentId=packet.id;updateShipButton();if(live)status('Live for students -- '+live.sector+' booth #'+live.slotNumber+'. Use View venue to see your local preview.');else status('Local preview updated, but shipping to the live venue failed: '+(liveError?.message||'unknown error')+'. Fix this before the fair -- students will not see this booth yet.',true);}catch(e){hideShipOverlay();status(e.message,true);}finally{btn.disabled=false;}};
  $('newEmployer').onclick=()=>{resetInformationControls();currentShipmentId=null;updateShipButton();$('boothName').value='';$('contactName').value='';$('contactEmail').value='';projectImages={logo:null,photos:[]};$('logoMode').value='flanked';$('logoOnCounter').checked=true;for(const id of ['website','videoLink','resourceTitle','resourceUrl','logoFile','photoFiles'])$(id).value='';$('randomDesign').click();status('New employer draft. Your previously shipped booths remain in the venue.');$('boothName').focus();};
  $('viewVenue').onclick=()=>studioCall('SHOW_VENUE',null).catch(e=>status(e.message,true));
  $('projectFile').addEventListener('change',()=>{currentShipmentId=null;updateShipButton();});
