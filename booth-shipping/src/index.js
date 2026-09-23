@@ -44,6 +44,22 @@ export default {
       return new Response(object.body, { headers });
     }
 
+    // venue.html (the student "walk the fair" link) is the same ~47MB venue
+    // renderer the studio's own "Walk venue" tab embeds, standing alone at
+    // the top level instead of in an iframe. Same 25MB static-asset limit
+    // problem as design.html, same R2 fix. When it's loaded at the top of
+    // the browsing context (not inside the studio's iframe) its own script
+    // switches into student mode: it hides the employer/QA controls and
+    // fetches /api/manifest itself to place every shipped booth.
+    if (url.pathname === '/venue.html') {
+      const object = await env.BOOTHS.get('static/venue.html');
+      if (!object) return new Response('venue.html not uploaded to R2 yet.', { status: 404 });
+      const headers = new Headers();
+      headers.set('content-type', 'text/html; charset=utf-8');
+      headers.set('cache-control', 'public, max-age=300');
+      return new Response(object.body, { headers });
+    }
+
     if (url.pathname.startsWith('/booths/')) {
       const segments = url.pathname.slice('/booths/'.length).split('/');
       return booths.onRequestGet({ ...context, params: { path: segments } });

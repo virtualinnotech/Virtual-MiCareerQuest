@@ -29,6 +29,9 @@ export async function onRequestGet(context) {
   headers.set('Cache-Control', 'public, max-age=300');
 
   const response = new Response(object.body, { headers });
-  context.waitUntil(cache.put(cacheKey, response.clone()));
+  // The Cache API only accepts GET requests as cache keys -- a HEAD hitting
+  // this route (browsers issue these as preconnect/preflight probes) would
+  // otherwise throw here on every request, every time.
+  if (request.method === 'GET') context.waitUntil(cache.put(cacheKey, response.clone()));
   return response;
 }
