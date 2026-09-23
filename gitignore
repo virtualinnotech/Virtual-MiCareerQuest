@@ -1,0 +1,6 @@
+# macOS Finder metadata -- gets created just by opening a folder in Finder,
+# not part of the project. Keeps GitHub Desktop from picking these up again.
+.DS_Store
+
+# Windows Explorer equivalent
+Thumbs.db
