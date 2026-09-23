@@ -1,0 +1,616 @@
+{
+  "update": 19,
+  "totalPopulation": 1500,
+  "existingPopulation": 1000,
+  "additionalStudents": 500,
+  "volunteers": {
+    "total": 50,
+    "stationed": 45,
+    "roaming": 5
+  },
+  "colors": "original new-student texture colors; no wardrobe tint",
+  "newClips": "User-supplied Standard Walk.fbx and Idle.fbx retargeted to the original seven skeletons",
+  "sourceReports": [
+    {
+      "model": "fig0027",
+      "inputFBX": "fig0027.FBX",
+      "sourceTakeNames": [
+        "Take 001"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.03333333333333333,
+        0.06666666666666667
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 7241,
+      "outputVertices": 8622,
+      "triangles": 14478,
+      "joints": 54,
+      "outputBytes": 2307592,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 108,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.0016361272892075757,
+          "groundMaximum": 0.003191782751731792,
+          "maxGroundAdjustment": 0.04708222786115385,
+          "retargetedMajorBones": 53
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 108,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.0009963009024760256,
+          "groundMaximum": 0.0010040224396296274,
+          "maxGroundAdjustment": 0.0004907929364050909,
+          "retargetedMajorBones": 53
+        }
+      },
+      "neutralHeight": 1.8513340711593615,
+      "roleMatches": {
+        "": 31,
+        "hip": 1,
+        "spine": 2,
+        "chest": 2,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "leftthigh": 1,
+        "leftcalf": 1,
+        "neck": 1,
+        "head": 1,
+        "rightthigh": 1,
+        "rightcalf": 1,
+        "leftfoot": 1,
+        "lefttoe": 1,
+        "rightfoot": 1,
+        "righttoe": 1,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1
+      },
+      "sourceSha256": "84a5ca18c158ada4a8007f9f5533103b4f0738886f0b0331ba697cbfac7c5d59",
+      "outputSha256": "f50ebbf3efa468608511193a88e602f45c42fbcf1841feea1f4b03093bf521f5",
+      "motionRevision": 19
+    },
+    {
+      "model": "fig0098",
+      "inputFBX": "fig0098.FBX",
+      "sourceTakeNames": [
+        "Take 001"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.03333333333333333,
+        0.06666666666666667
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 10359,
+      "outputVertices": 11395,
+      "triangles": 20714,
+      "joints": 54,
+      "outputBytes": 2759572,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 108,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.002877921866339922,
+          "groundMaximum": 0.003965726088870025,
+          "maxGroundAdjustment": 0.06943892690676323,
+          "retargetedMajorBones": 53
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 108,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.0009984089357721682,
+          "groundMaximum": 0.0010012738668684585,
+          "maxGroundAdjustment": 0.002666186111016387,
+          "retargetedMajorBones": 53
+        }
+      },
+      "neutralHeight": 1.706180939674374,
+      "roleMatches": {
+        "": 31,
+        "hip": 1,
+        "spine": 2,
+        "chest": 2,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1,
+        "neck": 1,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "rightthigh": 1,
+        "leftthigh": 1,
+        "leftcalf": 1,
+        "leftfoot": 1,
+        "lefttoe": 1,
+        "head": 1,
+        "rightcalf": 1,
+        "rightfoot": 1,
+        "righttoe": 1
+      },
+      "sourceSha256": "8e9bdedc700a789c79e46518e92332f3a11fe886f927873b19023d5498e58945",
+      "outputSha256": "2ec6c2a70b7b47a2624700e9954a4b0c52d5c225fcfad7dd356bc3f4d60b33ae",
+      "motionRevision": 19
+    },
+    {
+      "model": "fig0143",
+      "inputFBX": "fig0143.fbx",
+      "sourceTakeNames": [
+        "poses.fig0143"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.041666666666666664,
+        0.08333333333333333
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 10740,
+      "outputVertices": 12183,
+      "triangles": 21476,
+      "joints": 71,
+      "outputBytes": 3118624,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.0018035480273756455,
+          "groundMaximum": 0.0026417785380349057,
+          "maxGroundAdjustment": 0.03264985292571282,
+          "retargetedMajorBones": 54
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.0009983051206302498,
+          "groundMaximum": 0.001002223489289222,
+          "maxGroundAdjustment": 0.0023773894857266843,
+          "retargetedMajorBones": 54
+        }
+      },
+      "neutralHeight": 1.680664160724227,
+      "roleMatches": {
+        "": 47,
+        "hip": 2,
+        "spine": 2,
+        "chest": 1,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "rightthigh": 1,
+        "rightcalf": 1,
+        "neck": 2,
+        "rightfoot": 1,
+        "righttoe": 1,
+        "leftthigh": 1,
+        "head": 1,
+        "leftcalf": 1,
+        "leftfoot": 1,
+        "lefttoe": 1
+      },
+      "sourceSha256": "705d5c789a036e8611dc560fe1fa86ad64044dfdaff931f70e93edaff309eb91",
+      "outputSha256": "22dcf201937d62497d64f25b73d6f31aa9a903ffae587dc39fd01f035c14970a",
+      "motionRevision": 19
+    },
+    {
+      "model": "fig0147",
+      "inputFBX": "fig0147.fbx",
+      "sourceTakeNames": [
+        "poses.fig0147"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.041666666666666664,
+        0.08333333333333333
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 15003,
+      "outputVertices": 16680,
+      "triangles": 30002,
+      "joints": 71,
+      "outputBytes": 3830920,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.0021094010453550915,
+          "groundMaximum": 0.0040064969878484125,
+          "maxGroundAdjustment": 0.05111538270842125,
+          "retargetedMajorBones": 54
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.0009962798135143068,
+          "groundMaximum": 0.0010041921219232455,
+          "maxGroundAdjustment": 0.000695987246513085,
+          "retargetedMajorBones": 54
+        }
+      },
+      "neutralHeight": 1.5923300623777412,
+      "roleMatches": {
+        "": 47,
+        "hip": 2,
+        "spine": 2,
+        "chest": 1,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "rightthigh": 1,
+        "rightcalf": 1,
+        "neck": 2,
+        "rightfoot": 1,
+        "righttoe": 1,
+        "leftthigh": 1,
+        "leftcalf": 1,
+        "leftfoot": 1,
+        "lefttoe": 1,
+        "head": 1
+      },
+      "sourceSha256": "35c914298502fa6a9b22cf1a448db3a06d9193000c25e6d8e775c7ce82c6fe0e",
+      "outputSha256": "7d764f053dc132665d4853567dfe55db2b90197a867666b65916db0aba86e10a",
+      "motionRevision": 19
+    },
+    {
+      "model": "fig0151",
+      "inputFBX": "fig0151.fbx",
+      "sourceTakeNames": [
+        "poses.fig0151"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.041666666666666664,
+        0.08333333333333333
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 10569,
+      "outputVertices": 12055,
+      "triangles": 21134,
+      "joints": 71,
+      "outputBytes": 2742688,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.0020806837136645717,
+          "groundMaximum": 0.0031617610653880412,
+          "maxGroundAdjustment": 0.08191366189243272,
+          "retargetedMajorBones": 54
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.0009964902720276808,
+          "groundMaximum": 0.001003939438350232,
+          "maxGroundAdjustment": 0.0010581581542913948,
+          "retargetedMajorBones": 54
+        }
+      },
+      "neutralHeight": 1.7231645724394535,
+      "roleMatches": {
+        "": 47,
+        "hip": 2,
+        "spine": 2,
+        "chest": 1,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "neck": 2,
+        "rightthigh": 1,
+        "rightcalf": 1,
+        "rightfoot": 1,
+        "righttoe": 1,
+        "leftthigh": 1,
+        "leftcalf": 1,
+        "head": 1,
+        "leftfoot": 1,
+        "lefttoe": 1
+      },
+      "sourceSha256": "b8e5555974cf89d26d9b77052f7576f8bcf6304431ff6ed81901b568129b3dcd",
+      "outputSha256": "e5250be50ecda511a1c9aaa882cbd1117a5a860299a9afd7e2d056f94df8940c",
+      "motionRevision": 19
+    },
+    {
+      "model": "fig0160",
+      "inputFBX": "fig0160.fbx",
+      "sourceTakeNames": [
+        "poses.fig0160"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.041666666666666664,
+        0.08333333333333333
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 16322,
+      "outputVertices": 17984,
+      "triangles": 32640,
+      "joints": 71,
+      "outputBytes": 3866332,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.0016816006019648583,
+          "groundMaximum": 0.0031230930309653895,
+          "maxGroundAdjustment": 0.04145275561798203,
+          "retargetedMajorBones": 54
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.00099727801079599,
+          "groundMaximum": 0.0010047842792770322,
+          "maxGroundAdjustment": 0.0007642429747196734,
+          "retargetedMajorBones": 54
+        }
+      },
+      "neutralHeight": 1.6427795704035169,
+      "roleMatches": {
+        "": 47,
+        "hip": 2,
+        "spine": 2,
+        "chest": 1,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "rightthigh": 1,
+        "rightcalf": 1,
+        "rightfoot": 1,
+        "righttoe": 1,
+        "neck": 2,
+        "leftthigh": 1,
+        "leftcalf": 1,
+        "leftfoot": 1,
+        "lefttoe": 1,
+        "head": 1
+      },
+      "sourceSha256": "26ae4afc1536a0a8186d3120c9e26c1c02b4aee51aabacbc8768ac990efa90f6",
+      "outputSha256": "ad5e0f4adceadcc53f1d1cc78da30bbd23dcb1fca28c6ed3440edb5ded967155",
+      "motionRevision": 19
+    },
+    {
+      "model": "fig0165",
+      "inputFBX": "fig0165.fbx",
+      "sourceTakeNames": [
+        "poses.fig0165"
+      ],
+      "sourceKeyTimesSeconds": [
+        0.0,
+        0.041666666666666664,
+        0.08333333333333333
+      ],
+      "sourceAnimatedPoseKeys": 3,
+      "originalControlPoints": 11028,
+      "outputVertices": 12455,
+      "triangles": 22056,
+      "joints": 71,
+      "outputBytes": 2784124,
+      "textureInputSize": [
+        2048,
+        2048
+      ],
+      "textureOutputSize": [
+        2048,
+        2048
+      ],
+      "textureColorEditing": false,
+      "clipsAdded": {
+        "Walk": {
+          "sourceFile": "Standard Walk.fbx",
+          "duration": 1.1666666666666667,
+          "samples": 36,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": -0.0016937117203442847,
+          "groundMaximum": 0.002553809533904796,
+          "maxGroundAdjustment": 0.04112014619249886,
+          "retargetedMajorBones": 52
+        },
+        "Idle": {
+          "sourceFile": "Idle.fbx",
+          "duration": 8.333333333333334,
+          "samples": 251,
+          "channels": 142,
+          "rootForwardDrift": 0.0,
+          "groundMinimum": 0.0009968352056337357,
+          "groundMaximum": 0.001004033450319409,
+          "maxGroundAdjustment": 0.0031820548935531236,
+          "retargetedMajorBones": 52
+        }
+      },
+      "neutralHeight": 1.696794003530076,
+      "roleMatches": {
+        "": 49,
+        "hip": 2,
+        "spine": 2,
+        "chest": 1,
+        "leftclavicle": 1,
+        "leftarm": 1,
+        "leftforearm": 1,
+        "lefthand": 1,
+        "rightclavicle": 1,
+        "rightarm": 1,
+        "rightforearm": 1,
+        "righthand": 1,
+        "rightthigh": 1,
+        "leftthigh": 1,
+        "rightcalf": 1,
+        "rightfoot": 1,
+        "righttoe": 1,
+        "leftcalf": 1,
+        "head": 1,
+        "leftfoot": 1,
+        "lefttoe": 1
+      },
+      "sourceSha256": "f15788d670589393bdcb3d30f54e63d5e22359e60fe0f48f00ad8ff010cb7854",
+      "outputSha256": "c70471060c2e383b23fe95847779742caba689f9333588cc33ff48104e2060ed",
+      "motionRevision": 19
+    }
+  ],
+  "files": [
+    {
+      "file": "fig0027.glb",
+      "instancesAt1500": 72,
+      "bytes": 1831876,
+      "sha256": "8550bb88a90c122c1d4d9471d1b3cdc0c2b212288c89421319cd9122e31aaff4"
+    },
+    {
+      "file": "fig0098.glb",
+      "instancesAt1500": 72,
+      "bytes": 2283884,
+      "sha256": "e9b2cf2e2d9a820be3019e413d6738287903ce6ac30f58037ef133cadfec1746"
+    },
+    {
+      "file": "fig0143.glb",
+      "instancesAt1500": 72,
+      "bytes": 2494532,
+      "sha256": "c58e64b9545fbd6002a238bd67e818cbbae6b63fa110920bf6dff1b0dca21181"
+    },
+    {
+      "file": "fig0147.glb",
+      "instancesAt1500": 71,
+      "bytes": 3206772,
+      "sha256": "6ca0b4c9e68b3e62c4f3699e22cfffaf746bfe580160b70f362cb794169d34f5"
+    },
+    {
+      "file": "fig0151.glb",
+      "instancesAt1500": 71,
+      "bytes": 2118540,
+      "sha256": "923d1175b43101eefcb4cb3de7c157ade5fc7971460c3e627802858b86022472"
+    },
+    {
+      "file": "fig0160.glb",
+      "instancesAt1500": 71,
+      "bytes": 3242188,
+      "sha256": "ad81841c3e2ed9d6f4b91581a9ca4fb05a1d49bdd93e028a8bee166035b63d6d"
+    },
+    {
+      "file": "fig0165.glb",
+      "instancesAt1500": 71,
+      "bytes": 2160032,
+      "sha256": "b3531d029ae831b38ce8d080b918bf9a7fa9d2883f3109da3247d6b230ab40c2"
+    }
+  ],
+  "motionSources": [
+    "Standard Walk.fbx",
+    "Idle.fbx"
+  ],
+  "safeStartRetained": true
+}
