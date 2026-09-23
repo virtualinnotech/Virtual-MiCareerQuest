@@ -1,0 +1,14 @@
+{
+  "name": "micareerquest-booth-shipping",
+  "private": true,
+  "scripts": {
+    "db:seed:gen": "node db/generate-seed.js",
+    "db:apply:local": "wrangler d1 execute micareerquest-slots --local --file=db/schema.sql && wrangler d1 execute micareerquest-slots --local --file=db/seed.sql",
+    "db:apply:remote": "wrangler d1 execute micareerquest-slots --remote --file=db/schema.sql && wrangler d1 execute micareerquest-slots --remote --file=db/seed.sql",
+    "dev": "wrangler pages dev public --d1 DB --r2 BOOTHS",
+    "deploy": "wrangler pages deploy public"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
