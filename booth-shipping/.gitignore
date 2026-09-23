@@ -1,7 +1,2 @@
 node_modules/
 .wrangler/
-
-# Copied in at dev/deploy time by `npm run sync:design-page` from the real
-# source at ../MiCareerQuest-Ship-to-Venue-v13.html -- never edit this copy
-# directly, and never commit it (it's 60+MB and would just go stale).
-public/design.html

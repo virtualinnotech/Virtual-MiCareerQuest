@@ -1,11 +1,16 @@
 # Booth shipping backend (140 slots, real integration)
 
-The one piece of "real" backend in the whole project. Everything else
-(the student venue) stays a static site on Cloudflare Pages. This is a
-small Cloudflare Pages + Functions + D1 + R2 app that runs on Cloudflare's
-free tier, and does exactly one job: let an employer design a booth in the
-existing 3D studio and ship it straight to a slot, first-come-first-served,
-off a single shared link -- no separate claim step.
+The one piece of "real" backend in the whole project. This is a small
+Cloudflare Worker (with a static assets binding, D1, and R2) that runs on
+Cloudflare's free tier, and does exactly one job: let an employer design a
+booth in the existing 3D studio and ship it straight to a slot,
+first-come-first-served, off a single shared link -- no separate claim step.
+
+Built originally as a classic Cloudflare Pages project (a `functions/`
+directory with file-based routing). Cloudflare's dashboard now provisions
+everything as a plain Worker instead, so `src/index.js` is a thin router
+that dispatches to those same handler files unchanged and falls through to
+the static asset binding for everything else -- see "Files" below.
 
 ## How it works
 
@@ -34,6 +39,13 @@ off a single shared link -- no separate claim step.
   Cache API. Employers shipping booths (rare, low volume) hit the database
   and R2; students loading the venue (the actual traffic spike) mostly hit
   Cloudflare's cache, no matter how many of them there are.
+- **`design.html` is served from R2, not as a static asset.** It's a
+  ~62MB single-file export of the booth studio, and Cloudflare's static
+  asset serving (both the old Pages product and the current Workers+assets
+  model) caps individual files at 25MB -- a hard platform limit, discovered
+  the hard way against a real deploy. `sync:design-page:*` uploads it to R2
+  at dev/deploy time instead, and `src/index.js` streams it back out for
+  `GET /design.html`. R2 has no such per-object limit.
 - **No-shows get a placeholder, on your schedule.** `functions/api/admin/fill-demo.js`
   is a manual action (call it with the admin key whenever you decide
   design season is over) that converts any still-`open` slots to a
@@ -59,6 +71,8 @@ off a single shared link -- no separate claim step.
 ## Files
 
 ```
+src/index.js            Worker entry point: routes /api/*, /booths/*, /design.html,
+                         falls through to the static asset binding for everything else
 db/schema.sql          the one table: slots (sector, slot_number, status, ...)
 db/generate-seed.js     edit SECTOR_COUNTS here, then `npm run db:seed:gen`
 db/seed.sql             generated -- do not hand-edit
@@ -72,10 +86,13 @@ functions/api/admin/fill-demo.js POST -- fill remaining open slots with placehol
 functions/booths/[[path]].js     GET  -- serves the uploaded GLBs from R2, edge-cached
 public/index.html         standalone claim-only page (not the real employer flow anymore)
 public/venue-preview.html   stand-in for the student game reading /api/manifest
-public/design.html         NOT committed -- copied in by `npm run sync:design-page`
-                            from ../MiCareerQuest-Ship-to-Venue-v13.html. This is the
-                            real employer link once deployed.
 ```
+
+`design.html` is NOT a file in `public/` -- it's uploaded to R2 by
+`npm run sync:design-page:local` / `:remote` from
+`../MiCareerQuest-Ship-to-Venue-v13.html`, and `src/index.js` streams it
+back out for `GET /design.html`. This is the real employer link once
+deployed.
 
 The studio itself (`../studio-frame.html`, the iframe the design page
 embeds) has the actual integration: `shipToLiveVenue()` builds a
@@ -96,7 +113,7 @@ npm install
 npm run db:seed:gen                 # writes db/seed.sql from SECTOR_COUNTS
 npx wrangler d1 execute micareerquest-slots --local --file=db/schema.sql
 npx wrangler d1 execute micareerquest-slots --local --file=db/seed.sql
-npm run dev                         # syncs design.html, then wrangler pages dev
+npm run dev                         # uploads design.html to local R2, then wrangler dev
 ```
 
 Then open http://localhost:8788/design.html and use the actual booth
@@ -109,6 +126,13 @@ To reset the mock data back to all-open:
 
 ## Tested (this pass)
 
+- **The whole thing, again, after the Pages-to-Workers pivot**: rebuilt
+  `src/index.js` + `wrangler.toml` for the Workers+assets model (Cloudflare's
+  dashboard provisions Workers now, not classic Pages, and `wrangler pages
+  deploy` fails against it with a misleading auth error), moved
+  `design.html` to R2 after hitting the real 25MB static-asset limit
+  against an actual deploy attempt, then re-ran every check below against
+  local `wrangler dev` and confirmed identical results.
 - **Real browser, real studio, real export**: drove `design.html` with
   Playwright/Chromium, clicked "Use sample company" then "Ship to venue",
   and captured the actual `POST /api/ship` the studio fired -- 200,
@@ -140,6 +164,14 @@ npx wrangler d1 create micareerquest-slots        # paste the printed database_i
 npx wrangler r2 bucket create micareerquest-booths
 npx wrangler d1 execute micareerquest-slots --remote --file=db/schema.sql
 npx wrangler d1 execute micareerquest-slots --remote --file=db/seed.sql
-npx wrangler pages secret put ADMIN_KEY            # pick a real secret, not the dev default
-npm run deploy                                      # syncs design.html, then deploys
+npx wrangler secret put ADMIN_KEY                  # pick a real secret, not the dev default
+npm run deploy                                      # uploads design.html to R2, then wrangler deploy
 ```
+
+If deploying through Cloudflare's dashboard (Git-connected Worker) instead
+of the CLI: set the **Build command** to
+`npm install && npm run sync:design-page:remote`, the **Deploy command**
+to `npx wrangler deploy` (the dashboard's own default -- not
+`wrangler pages deploy`, which targets a different, older product and
+fails with a misleading authentication error against a Worker), and the
+**Root directory** / **Path** to `booth-shipping`.
