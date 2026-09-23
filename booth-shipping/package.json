@@ -5,9 +5,10 @@
     "db:seed:gen": "node db/generate-seed.js",
     "db:apply:local": "wrangler d1 execute micareerquest-slots --local --file=db/schema.sql && wrangler d1 execute micareerquest-slots --local --file=db/seed.sql",
     "db:apply:remote": "wrangler d1 execute micareerquest-slots --remote --file=db/schema.sql && wrangler d1 execute micareerquest-slots --remote --file=db/seed.sql",
-    "sync:design-page": "cp ../MiCareerQuest-Ship-to-Venue-v13.html public/design.html",
-    "dev": "npm run sync:design-page && wrangler pages dev public",
-    "deploy": "npm run sync:design-page && wrangler pages deploy public"
+    "sync:design-page:local": "wrangler r2 object put micareerquest-booths/static/design.html --file=../MiCareerQuest-Ship-to-Venue-v13.html --local",
+    "sync:design-page:remote": "wrangler r2 object put micareerquest-booths/static/design.html --file=../MiCareerQuest-Ship-to-Venue-v13.html --remote",
+    "dev": "npm run sync:design-page:local && wrangler dev",
+    "deploy": "npm run sync:design-page:remote && wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

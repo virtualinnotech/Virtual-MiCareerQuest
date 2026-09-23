@@ -1,9 +1,11 @@
 name = "virtual-micareerquest"
-pages_build_output_dir = "public"
+main = "src/index.js"
 compatibility_date = "2024-09-23"
 
-# Create with: npx wrangler d1 create micareerquest-slots
-# then paste the real database_id it prints below.
+[assets]
+directory = "public"
+binding = "ASSETS"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "micareerquest-slots"
@@ -14,6 +16,7 @@ database_id = "dd008013-e814-4ff1-8f65-4307ce40279b"
 binding = "BOOTHS"
 bucket_name = "micareerquest-booths"
 
-# Set the real value with: npx wrangler pages secret put ADMIN_KEY
+# Set the real value in the Cloudflare dashboard's environment variables for
+# this Worker -- do not rely on this file's value for the real deployment.
 [vars]
 ADMIN_KEY = "dev-only-change-me"
