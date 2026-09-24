@@ -82,18 +82,47 @@ functions/api/claim.js           POST -- standalone claim (testing / a "check sp
 functions/api/lookup.js          GET  -- "welcome back" check by email
 functions/api/ship.js            POST -- claim-if-needed + upload the real GLB (multipart)
 functions/api/manifest.js        GET  -- what the student game reads, edge-cached
-functions/api/admin/fill-demo.js POST -- fill remaining open slots with placeholders
+functions/api/admin/fill-demo.js    POST -- fill remaining open slots with placeholders
+functions/api/admin/list-booths.js  GET  -- every slot (incl. email), for the admin page
+functions/api/admin/reset-slot.js   POST -- clear a slot back to open, delete its R2 files
+functions/api/admin/update-slot.js  POST -- fix a typo'd contact email on an existing slot
 functions/booths/[[path]].js     GET  -- serves the uploaded GLBs from R2, edge-cached
+public/admin.html           the organizer's booth-management page -- see "Admin page" below
 public/venue-preview.html   pre-manifest stand-in, superseded by the real venue.html --
                              unreferenced, kept around as a testing scrap
 ```
 
-There are exactly two real links: `/design.html` (employer studio) and
-`/venue.html` (student fair). `/` is not a third page -- it 302s straight
-to `/venue.html`. It used to serve a standalone mock claim page from
+There are exactly two real links given out: `/design.html` (employer
+studio) and `/venue.html` (student fair), plus `/admin.html` for the
+organizer only. `/` is not a third public page -- it 302s straight to
+`/venue.html`. It used to serve a standalone mock claim page from
 before the real studio existed; that page posted plain JSON to
 `/api/ship`, which has expected a real multipart GLB upload for a long
 time, so it was a dead, broken link and has been removed.
+
+## Admin page
+
+`/admin.html` lists every one of the 140 slots -- sector, status,
+company name, contact email, when it shipped -- with a search box and
+two actions per shipped/claimed slot: **Edit email** (fixes a typo so
+an employer who lost track of the address they used can be looked up
+again) and **Reset slot** (deletes their uploaded GLB/project files
+from R2 and frees the slot back to `open`, e.g. to let them start
+over, or to undo a mistaken/duplicate entry).
+
+It's a plain static page (small enough to sit directly in `public/`,
+unlike `design.html`/`venue.html`) that calls the three
+`functions/api/admin/*.js` endpoints above, all gated by the same
+`x-admin-key` header check `fill-demo.js` already used. The page asks
+for that key once and keeps it in `sessionStorage` (cleared on tab
+close, never written to disk) for the rest of that browser tab.
+
+**The `ADMIN_KEY` in `wrangler.toml`'s `[vars]` block is a placeholder**
+(`dev-only-change-me`) for local dev only. The real deployment must
+override it with a real secret in the Cloudflare dashboard (Worker
+Settings -> Variables and Secrets) -- anyone who knows this repo's
+default value could otherwise open `/admin.html` on the live site and
+delete real employer booths.
 
 `design.html` is NOT a file in `public/` -- it's uploaded to R2 by
 `npm run sync:design-page:local` / `:remote` from

@@ -13,6 +13,9 @@ import * as lookup from '../functions/api/lookup.js';
 import * as ship from '../functions/api/ship.js';
 import * as manifest from '../functions/api/manifest.js';
 import * as fillDemo from '../functions/api/admin/fill-demo.js';
+import * as listBooths from '../functions/api/admin/list-booths.js';
+import * as resetSlot from '../functions/api/admin/reset-slot.js';
+import * as updateSlot from '../functions/api/admin/update-slot.js';
 import * as booths from '../functions/booths/[[path]].js';
 
 const ROUTES = [
@@ -22,6 +25,9 @@ const ROUTES = [
   { method: 'POST', path: '/api/ship', handler: ship.onRequestPost },
   { method: 'GET', path: '/api/manifest', handler: manifest.onRequestGet },
   { method: 'POST', path: '/api/admin/fill-demo', handler: fillDemo.onRequestPost },
+  { method: 'GET', path: '/api/admin/list-booths', handler: listBooths.onRequestGet },
+  { method: 'POST', path: '/api/admin/reset-slot', handler: resetSlot.onRequestPost },
+  { method: 'POST', path: '/api/admin/update-slot', handler: updateSlot.onRequestPost },
 ];
 
 export default {
