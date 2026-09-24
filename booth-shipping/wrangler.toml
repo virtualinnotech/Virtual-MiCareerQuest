@@ -16,7 +16,14 @@ database_id = "dd008013-e814-4ff1-8f65-4307ce40279b"
 binding = "BOOTHS"
 bucket_name = "micareerquest-booths"
 
-# Set the real value in the Cloudflare dashboard's environment variables for
-# this Worker -- do not rely on this file's value for the real deployment.
-[vars]
-ADMIN_KEY = "dev-only-change-me"
+# ADMIN_KEY is deliberately NOT set here. It guards /admin.html, which can
+# delete real employer booths -- it must be a real secret set once in the
+# Cloudflare dashboard (Worker -> Settings -> Variables and Secrets -> Add
+# variable -> toggle "Encrypt"), never committed to this file. If a value
+# were set here under [vars], the next git-triggered deploy would apply it
+# and silently overwrite/undo the dashboard secret, since Workers Builds
+# runs `wrangler deploy` from exactly what's committed here.
+#
+# For local `wrangler dev` only, create a `.dev.vars` file (gitignored,
+# never committed) in this directory with a line like:
+#   ADMIN_KEY=dev-only-change-me
