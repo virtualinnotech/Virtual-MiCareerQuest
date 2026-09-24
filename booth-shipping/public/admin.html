@@ -40,7 +40,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;ove
 th,td{text-align:left;padding:10px 12px;font-size:13px;border-bottom:1px solid #eaf0f3}
 th{background:#f3f7f9;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#607380}
 tr:last-child td{border-bottom:none}
-td.actions{display:flex;gap:6px;flex-wrap:wrap}
+td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decoration:none}
 .badge{display:inline-block;font-size:11px;font-weight:650;padding:3px 8px;border-radius:999px}
 .badge.open{background:#eef3f6;color:#607380}
 .badge.claimed{background:#fff3e0;color:#b06b00}
@@ -129,6 +129,7 @@ function renderRows(){
    <td>${s.email||'<span class=\"muted\">—</span>'}</td>
    <td>${fmtDate(s.shipped_at)||'<span class=\"muted\">—</span>'}</td>
    <td class="actions">
+    ${s.status==='shipped'?`<a class="studioLink" href="/design.html?admin_sector=${encodeURIComponent(s.sector)}&admin_slot=${s.slot_number}" target="_blank" rel="noopener"><button>Edit in studio</button></a>`:''}
     ${s.email?`<button class="editBtn">Edit email</button>`:''}
     ${s.status!=='open'?`<button class="resetBtn danger">Reset slot</button>`:''}
    </td>
