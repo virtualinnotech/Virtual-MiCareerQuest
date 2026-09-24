@@ -59,20 +59,20 @@ the static asset binding for everything else -- see "Files" below.
   `SECTOR_COUNTS` in `db/generate-seed.js` and re-run `npm run db:seed:gen`
   once you know the real per-sector employer counts -- nothing else
   changes.
-- **The student venue doesn't read the manifest yet.** Employers can now
-  design and ship a real booth, and `GET /api/manifest` / the individual
-  `/booths/<sector>/<slot>.glb` files are ready and edge-cached, but
-  nothing in `venue-frame.html` fetches them and drops them into the 3D
-  scene yet -- today it only shows locally shipped booths in the
-  employer's own browser (the `SHIP_BOOTH` -> `venueFrame` postMessage
-  path, kept as-is for their own instant local preview). That dynamic-load
-  wiring is the next piece.
+- **The student venue reads the manifest on its own.** `venue-frame.html`
+  detects when it's loaded standalone (top-level, not inside the studio's
+  iframe) and fetches `GET /api/manifest` itself, placing every shipped
+  booth from `/booths/<sector>/<slot>.glb`. The employer's own local
+  preview still uses the original `SHIP_BOOTH` -> `venueFrame` postMessage
+  path for instant feedback while designing -- the two paths don't
+  interfere with each other.
 
 ## Files
 
 ```
 src/index.js            Worker entry point: routes /api/*, /booths/*, /design.html,
-                         falls through to the static asset binding for everything else
+                         /venue.html, redirects / -> /venue.html, falls through to
+                         the static asset binding for everything else
 db/schema.sql          the one table: slots (sector, slot_number, status, ...)
 db/generate-seed.js     edit SECTOR_COUNTS here, then `npm run db:seed:gen`
 db/seed.sql             generated -- do not hand-edit
@@ -81,12 +81,19 @@ functions/api/sectors.js         GET  -- open/taken counts per sector
 functions/api/claim.js           POST -- standalone claim (testing / a "check spots" page)
 functions/api/lookup.js          GET  -- "welcome back" check by email
 functions/api/ship.js            POST -- claim-if-needed + upload the real GLB (multipart)
-functions/api/manifest.js        GET  -- what the student game will read, edge-cached
+functions/api/manifest.js        GET  -- what the student game reads, edge-cached
 functions/api/admin/fill-demo.js POST -- fill remaining open slots with placeholders
 functions/booths/[[path]].js     GET  -- serves the uploaded GLBs from R2, edge-cached
-public/index.html         standalone claim-only page (not the real employer flow anymore)
-public/venue-preview.html   stand-in for the student game reading /api/manifest
+public/venue-preview.html   pre-manifest stand-in, superseded by the real venue.html --
+                             unreferenced, kept around as a testing scrap
 ```
+
+There are exactly two real links: `/design.html` (employer studio) and
+`/venue.html` (student fair). `/` is not a third page -- it 302s straight
+to `/venue.html`. It used to serve a standalone mock claim page from
+before the real studio existed; that page posted plain JSON to
+`/api/ship`, which has expected a real multipart GLB upload for a long
+time, so it was a dead, broken link and has been removed.
 
 `design.html` is NOT a file in `public/` -- it's uploaded to R2 by
 `npm run sync:design-page:local` / `:remote` from

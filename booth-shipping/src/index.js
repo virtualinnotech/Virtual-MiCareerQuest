@@ -29,6 +29,17 @@ export default {
     const url = new URL(request.url);
     const context = { request, env, waitUntil: ctx.waitUntil.bind(ctx) };
 
+    // "/" used to serve a leftover mock claim page from before the real
+    // studio (design.html) existed -- it posted plain JSON to /api/ship,
+    // which has expected a real multipart GLB upload for a long time, so
+    // it was just a broken dead end. There is no third link: employers get
+    // /design.html directly, students get /venue.html directly. Anyone who
+    // lands on the bare domain is far more likely to be a student, so send
+    // them straight into the fair.
+    if (url.pathname === '/') {
+      return Response.redirect(new URL('/venue.html', request.url).toString(), 302);
+    }
+
     // design.html is a ~62MB single-file export of the booth studio --
     // Cloudflare's static asset serving (both the old Pages product and
     // the current Workers+assets model) caps individual files at 25MB, so
