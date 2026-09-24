@@ -86,6 +86,8 @@ functions/api/admin/fill-demo.js    POST -- fill remaining open slots with place
 functions/api/admin/list-booths.js  GET  -- every slot (incl. email), for the admin page
 functions/api/admin/reset-slot.js   POST -- clear a slot back to open, delete its R2 files
 functions/api/admin/update-slot.js  POST -- fix a typo'd contact email on an existing slot
+functions/api/admin/set-capacity.js POST -- grow/shrink how many slots a sector has --
+                                     see "Dynamic booth capacity" below
 functions/booths/[[path]].js     GET  -- serves the uploaded GLBs from R2, edge-cached
 public/admin.html           the organizer's booth-management page -- see "Admin page" below
 public/venue-preview.html   pre-manifest stand-in, superseded by the real venue.html --
@@ -102,27 +104,79 @@ time, so it was a dead, broken link and has been removed.
 
 ## Admin page
 
-`/admin.html` lists every one of the 140 slots -- sector, status,
-company name, contact email, when it shipped -- with a search box and
-two actions per shipped/claimed slot: **Edit email** (fixes a typo so
-an employer who lost track of the address they used can be looked up
-again) and **Reset slot** (deletes their uploaded GLB/project files
-from R2 and frees the slot back to `open`, e.g. to let them start
-over, or to undo a mistaken/duplicate entry).
+`/admin.html` lists every slot -- sector, status, company name,
+contact email, when it shipped -- with a search box and, per slot:
+**Edit in studio** (opens `/design.html?admin_sector=...&admin_slot=...`
+in a new tab, loading that employer's saved design straight into the
+studio so the organizer can add a link or fix something on their
+behalf and ship it again -- no need for the employer's email), **Edit
+email** (fixes a typo so an employer who lost track of the address
+they used can be looked up again), and **Reset slot** (deletes their
+uploaded GLB/project files from R2 and frees the slot back to `open`,
+e.g. to let them start over, or to undo a mistaken/duplicate entry).
+It also has a **Sector capacity** panel -- see "Dynamic booth
+capacity" below.
 
 It's a plain static page (small enough to sit directly in `public/`,
-unlike `design.html`/`venue.html`) that calls the three
+unlike `design.html`/`venue.html`) that calls the
 `functions/api/admin/*.js` endpoints above, all gated by the same
 `x-admin-key` header check `fill-demo.js` already used. The page asks
 for that key once and keeps it in `sessionStorage` (cleared on tab
 close, never written to disk) for the rest of that browser tab.
 
-**The `ADMIN_KEY` in `wrangler.toml`'s `[vars]` block is a placeholder**
-(`dev-only-change-me`) for local dev only. The real deployment must
-override it with a real secret in the Cloudflare dashboard (Worker
-Settings -> Variables and Secrets) -- anyone who knows this repo's
-default value could otherwise open `/admin.html` on the live site and
-delete real employer booths.
+**`ADMIN_KEY` is not in `wrangler.toml` at all.** It's set once as a
+real secret in the Cloudflare dashboard (Worker -> Settings ->
+Variables and Secrets), which is also the *only* place it lives --
+committing it to `wrangler.toml` would mean the next git-triggered
+deploy re-applies whatever's in that file and silently overwrites the
+real secret. For local `wrangler dev`, create a `.dev.vars` file
+(gitignored) with `ADMIN_KEY=dev-only-change-me` instead.
+
+## Dynamic booth capacity
+
+Each of the venue's 5 sectors has a fixed floor area (the physical
+building/curtain walls, never moved by any of this) but only a
+default ~150 hand-placed booth positions total across all of them
+(30/30/30/20/30 seeded today, out of 31/31/31/31/26 actually laid
+out -- see `../venue-frame.html`'s `DISCOVERY_LAYOUT`). The **Sector
+capacity** panel on `/admin.html` lets an organizer grow (or shrink)
+how many slots a sector has, up to a hard per-sector cap
+(`SECTOR_MAX_CAPACITY` in `set-capacity.js`, currently 71/75/70/72/61
+-- verified by exhaustive simulation of the layout generator below,
+comfortably covering 180-200+ employers total).
+
+- **Growing** a sector inserts new `open` rows (`set-capacity.js`).
+  `../venue-frame.html` reads each sector's live total from
+  `GET /api/sectors` at boot and, only for a sector whose requested
+  total exceeds what the hand-placed layout already has room for, runs
+  a procedural generator (`regenerateDiscoveryLayout` /
+  `layoutGenerateSector` in `../venue-frame.html`) that packs new
+  booth anchor points in rings around each sector's fixed landmark
+  sculptures, then along its perimeter, shrinking the *default* booth
+  footprint (and, isolated from that, the ambient crowd's rendered
+  size via `crowdVisualScale` -- never the player's own collision/
+  camera scale) as needed to fit. The walking-aisle gap never shrinks
+  -- it's tied to the visitor's real, unscaled collision width.
+- **Staying at or shrinking back within** a sector's original
+  hand-placed count leaves that sector's layout completely untouched
+  (byte-identical to the authored positions) -- growth is additive,
+  never a wholesale replacement of the hand-tuned look.
+- **Shrinking** only removes the highest-numbered slots, and only if
+  every one of them is still `open`; it refuses (naming the blocking
+  slot) rather than silently evicting a claimed or shipped booth.
+- An existing shipped booth whose saved position no longer exists
+  after a regeneration is automatically re-seated into a new valid
+  spot the next time it's loaded (`allocateDiscoveryPlacement`'s
+  existing "older layout" fallback in `../venue-frame.html` -- this
+  was already there for handling schema/version changes, and covers
+  this case for free).
+
+The generator is duplicated (not imported) in two places that must be
+kept in sync if its constants ever change: `../venue-frame.html`
+(`LAYOUT_*` constants, runs in the browser) and
+`functions/api/admin/set-capacity.js` (`SECTOR_MAX_CAPACITY`, a
+precomputed cap so the backend can refuse an impossible request before
+touching the database at all).
 
 `design.html` is NOT a file in `public/` -- it's uploaded to R2 by
 `npm run sync:design-page:local` / `:remote` from
@@ -135,12 +189,17 @@ embeds) has the actual integration: `shipToLiveVenue()` builds a
 `multipart/form-data` POST to `/api/ship` with the exported GLB, contact
 email, industry and booth name, fired from the existing "Ship to venue"
 button alongside (not instead of) its original local-preview behavior.
-`../MiCareerQuest-Ship-to-Venue-v13.html` embeds that studio as a base64
-blob -- editing it directly isn't practical (single ~65MB line), so any
-future change to the ship flow should be made in `../studio-frame.html`
-and re-spliced in (see git history for the splice approach: find the
-`<script id="studio-source">` tag, replace only its base64 content,
-verify the decoded result matches the edited file before writing).
+`../MiCareerQuest-Ship-to-Venue-v13.html` embeds that studio, and
+separately embeds `../venue-frame.html` (the venue itself, for the
+studio's own local "Walk venue" preview tab) the same way -- two base64
+blobs, `<script id="studio-source">` and `<script id="venue-source">`.
+Editing either directly in `v13.html` isn't practical (each is a single
+~65MB line), so a change belongs in `../studio-frame.html` or
+`../venue-frame.html` and then gets re-spliced in with
+`../splice-studio.sh` / `../splice-venue.sh` -- each finds its tag,
+replaces only the base64 content between it and the closing
+`</script>`, and verifies the decoded result matches the edited file
+byte-for-byte before overwriting `v13.html`.
 
 ## Run it locally (no Cloudflare account needed)
 
