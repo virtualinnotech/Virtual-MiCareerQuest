@@ -16,6 +16,7 @@ import * as fillDemo from '../functions/api/admin/fill-demo.js';
 import * as listBooths from '../functions/api/admin/list-booths.js';
 import * as resetSlot from '../functions/api/admin/reset-slot.js';
 import * as updateSlot from '../functions/api/admin/update-slot.js';
+import * as setCapacity from '../functions/api/admin/set-capacity.js';
 import * as booths from '../functions/booths/[[path]].js';
 
 const ROUTES = [
@@ -28,6 +29,7 @@ const ROUTES = [
   { method: 'GET', path: '/api/admin/list-booths', handler: listBooths.onRequestGet },
   { method: 'POST', path: '/api/admin/reset-slot', handler: resetSlot.onRequestPost },
   { method: 'POST', path: '/api/admin/update-slot', handler: updateSlot.onRequestPost },
+  { method: 'POST', path: '/api/admin/set-capacity', handler: setCapacity.onRequestPost },
 ];
 
 export default {

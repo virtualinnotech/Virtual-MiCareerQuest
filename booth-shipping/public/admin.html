@@ -32,6 +32,13 @@ main{padding:22px 26px;max-width:1200px;margin:0 auto}
 .stat{background:#fff;border:1px solid #dbe4e9;border-radius:10px;padding:12px 18px;min-width:110px}
 .stat .n{font-size:22px;font-weight:700;color:#1e65ae}
 .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#607380;font-weight:650}
+.panel{background:#fff;border:1px solid #dbe4e9;border-radius:10px;padding:16px 18px;margin-bottom:18px}
+.panel h2{font-size:14px;margin:0 0 6px;color:#1e65ae}
+.panel .hint{font-size:12px;color:#607380;margin:0 0 14px;line-height:1.5;max-width:760px}
+#capacityTable{box-shadow:none;border:1px solid #eaf0f3}
+#capacityTable input[type=number]{width:80px}
+.capActions{display:flex;gap:6px;align-items:center}
+.capMax{font-size:11px;color:#8a9aa8}
 
 .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
 .toolbar input{flex:1;min-width:220px}
@@ -71,6 +78,17 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
 </header>
 <main>
  <div id="summary" class="summary"></div>
+
+ <div class="panel">
+  <h2>Sector capacity</h2>
+  <p class="hint">How many booth slots each sector has. Growing a sector adds new open slots -- the venue's layout automatically shrinks booth size and crowd size to fit everyone once a sector needs more room than its default hand-placed spots. Shrinking only removes slots that are still open.</p>
+  <table id="capacityTable">
+   <thead><tr><th>Sector</th><th>Open</th><th>Claimed/shipped</th><th>Total slots</th><th>Set to</th><th></th></tr></thead>
+   <tbody id="capacityRows"></tbody>
+  </table>
+  <div id="capacityStatus" class="status"></div>
+ </div>
+
  <div class="toolbar">
   <input id="search" type="text" placeholder="Search by company, email or sector...">
  </div>
@@ -117,6 +135,30 @@ function renderSummary(slots){
  `;
 }
 
+// Keep in sync with functions/api/admin/set-capacity.js's SECTOR_MAX_CAPACITY --
+// both are derived from the same layout generator venue-frame.html runs at boot.
+const SECTOR_MAX_CAPACITY={'Manufacturing':71,'Health Science':75,'Agribusiness':70,'Construction':72,'Information Technology':61};
+
+function renderCapacity(){
+ const bySector=new Map();
+ for(const sector of Object.keys(SECTOR_MAX_CAPACITY))bySector.set(sector,{open:0,taken:0,total:0});
+ for(const s of allSlots){
+  if(!bySector.has(s.sector))bySector.set(s.sector,{open:0,taken:0,total:0});
+  const c=bySector.get(s.sector);c.total++;if(s.status==='open')c.open++;else c.taken++;
+ }
+ $('capacityRows').innerHTML=[...bySector.entries()].map(([sector,c])=>{
+  const max=SECTOR_MAX_CAPACITY[sector];
+  return `<tr data-sector="${sector}">
+   <td>${sector}</td>
+   <td>${c.open}</td>
+   <td>${c.taken}</td>
+   <td>${c.total}</td>
+   <td><input type="number" class="capInput" min="${c.taken}" max="${max}" value="${c.total}"></td>
+   <td class="capActions"><button class="capApply">Update</button><span class="capMax">max ${max}</span></td>
+  </tr>`;
+ }).join('');
+}
+
 function renderRows(){
  const q=$('search').value.trim().toLowerCase();
  const filtered=allSlots.filter(s=>!q||[s.sector,s.company_name,s.email,s.booth_name].some(v=>(v||'').toLowerCase().includes(q)));
@@ -143,6 +185,7 @@ async function loadSlots(){
   const data=await api('/api/admin/list-booths');
   allSlots=data.slots;
   renderSummary(allSlots);
+  renderCapacity();
   renderRows();
   $('status').textContent='';
  }catch(e){$('status').textContent=e.message;$('status').classList.add('error');}
@@ -162,6 +205,20 @@ $('rows').addEventListener('click',async e=>{
   try{await api('/api/admin/reset-slot',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sector,slotNumber})});await loadSlots();}
   catch(err){alert(err.message);}
  }
+});
+
+$('capacityRows').addEventListener('click',async e=>{
+ if(!e.target.classList.contains('capApply'))return;
+ const tr=e.target.closest('tr'),sector=tr.dataset.sector,input=tr.querySelector('.capInput');
+ const total=Number(input.value);
+ if(!Number.isInteger(total)||total<0){$('capacityStatus').textContent='Enter a whole number.';$('capacityStatus').classList.add('error');return;}
+ e.target.disabled=true;$('capacityStatus').textContent='Updating '+sector+'...';$('capacityStatus').classList.remove('error');
+ try{
+  await api('/api/admin/set-capacity',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sector,total})});
+  $('capacityStatus').textContent=sector+' set to '+total+' slots.';
+  await loadSlots();
+ }catch(err){$('capacityStatus').textContent=err.message;$('capacityStatus').classList.add('error');}
+ finally{e.target.disabled=false;}
 });
 
 $('search').addEventListener('input',renderRows);
