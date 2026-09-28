@@ -2,6 +2,11 @@
   "name": "micareerquest-booth-shipping",
   "private": true,
   "scripts": {
+    "sync:forklift": "node scripts/sync-forklift.cjs",
+    "presync:design-page:local": "npm run sync:forklift",
+    "presync:design-page:remote": "npm run sync:forklift",
+    "presync:venue-page:local": "npm run sync:forklift",
+    "presync:venue-page:remote": "npm run sync:forklift",
     "db:seed:gen": "node db/generate-seed.js",
     "db:apply:local": "wrangler d1 execute micareerquest-slots --local --file=db/schema.sql && wrangler d1 execute micareerquest-slots --local --file=db/seed.sql",
     "db:apply:remote": "wrangler d1 execute micareerquest-slots --remote --file=db/schema.sql && wrangler d1 execute micareerquest-slots --remote --file=db/seed.sql",

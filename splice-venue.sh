@@ -22,7 +22,7 @@ echo "Found the old venue content (bytes $CONTENT_START to $CONTENT_END). Splici
 TMPFILE="$FILE.tmp-new"
 rm -f "$TMPFILE"
 head -c "$CONTENT_START" "$FILE" > "$TMPFILE"
-base64 < "$NEW_VENUE" >> "$TMPFILE"
+base64 < "$NEW_VENUE" | fold -w 76 >> "$TMPFILE"
 tail -c +"$((CONTENT_END+1))" "$FILE" >> "$TMPFILE"
 
 echo "Verifying the result before touching your original file..."
