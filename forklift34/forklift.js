@@ -125,6 +125,56 @@ const Forklift34 = (() => {
         a.pose[i].rotation=[x*c+w*s,y*c+z*s,z*c-y*s,w*c-x*s];
       }
     }
+    gripWheel(a);
+  }
+  const quaternionMultiply = ([x,y,z,w],[a,b,c,d]) => [w*a+x*d+y*c-z*b,w*b-x*c+y*d+z*a,w*c+x*b-y*a+z*d,w*d-x*a-y*b-z*c];
+  function gripWheel(a) {
+    const m=a.model;
+    if(!a.forkliftArms) a.forkliftArms=['Left','Right'].map(side=>{
+      const find=part=>m.j.nodes.findIndex(n=>(n.name||'').split(':').pop()===side+part);
+      return {upper:find('Arm'),elbow:find('ForeArm'),palm:find('HandMiddle1'),hand:find('Hand')};
+    });
+    const world=[];
+    const rebuild=()=>{for(const i of m.order)world[i]=mm(world[m.parents.get(i)]||IDENTITY,trs(a.pose[i]));};
+    rebuild();
+    const hip=world[m.skins[0].joints[0]], correction=a.bindHip?[hip[12]-a.bindHip[0],0,hip[14]-a.bindHip[1]]:[0,0,0];
+    const actorInverse=CharacterFitting.invert4(actorMatrix(a));
+    const forkliftRoot=transform([f.x,floor(),f.z],[SCALE,SCALE,SCALE],0,f.yaw);
+    for(let side=0;side<2;side++) {
+      const arm=a.forkliftArms[side],end=arm.palm>=0?arm.palm:arm.hand;
+      if(arm.upper<0||arm.elbow<0||end<0)continue;
+      // Palm targets sit on opposite sides of the supplied steering-wheel rim.
+      const target=add(tp(actorInverse,...tp(forkliftRoot,side===0?.167:-.038,1.015,.22)),correction);
+      for(let iteration=0;iteration<8;iteration++)for(const joint of [arm.elbow,arm.upper]) {
+        const inv=CharacterFitting.invert4(world[m.parents.get(joint)]||IDENTITY);
+        const origin=tp(inv,...world[joint].slice(12,15));
+        const from=norm(sub(tp(inv,...world[end].slice(12,15)),origin)),to=norm(sub(tp(inv,...target),origin));
+        const axis=cross(from,to),w=1+clamp(dot(from,to),-1,1);
+        if(w<1e-6)continue;
+        const q=norm([...axis,w]);
+        delete a.pose[joint].matrix;
+        a.pose[joint].rotation=quaternionMultiply(q,a.pose[joint].rotation);
+        rebuild();
+      }
+    }
+  }
+  function forkContact() {
+    if(!pallet)return false;
+    // Clip each tine's actual plan-view segment against the pallet underside.
+    return [-.1795,.1795].every(tine=>{
+      const endpoints=[.938,1.7911].map(z=>{
+        const p=local(tine*SCALE,z*SCALE);
+        return local(f.x+p[0]-pallet.x,f.z+p[1]-pallet.z,-pallet.yaw);
+      });
+      const delta=sub(endpoints[1],endpoints[0]);let lo=0,hi=1;
+      for(let axis=0;axis<2;axis++){
+        const half=axis===0?.25:.29;
+        if(Math.abs(delta[axis])<1e-7){if(Math.abs(endpoints[0][axis])>half)return false;continue;}
+        const a=(-half-endpoints[0][axis])/delta[axis],b=(half-endpoints[0][axis])/delta[axis];
+        lo=Math.max(lo,Math.min(a,b));hi=Math.min(hi,Math.max(a,b));
+      }
+      return (hi-lo)*Math.hypot(...delta)>=.025;
+    });
   }
   function release() {
     if(!f.mounted||!f.carrying)return;
@@ -152,12 +202,16 @@ const Forklift34 = (() => {
       if(!people&&!palletHit&&NAV.freeSegment(f.grid,f.x,f.z,x,z)){f.distance+=f.speed*dt;f.x=x;f.z=z;f.yaw=yaw;}
       else {if(Math.abs(f.speed)>.03&&performance.now()-f.bumpTime>1000){f.bumps++;f.bumpTime=performance.now();}f.speed=0;}
       const lifting=(has('e')?1:0)-(has('q')?1:0);
-      if(lifting>0&&!f.carrying&&!f.delivered&&f.lift<.13&&Math.abs(f.speed)<.12) {
-        const p=socket();
-        if(Math.hypot(p[0]-pallet.x,p[1]-pallet.z)<.10&&Math.abs(angle(f.yaw-pallet.yaw))<.18)f.carrying=true;
+      const nextLift=clamp(f.lift+lifting*dt*.35,0,.65);
+      const forkTop=floor()+(f.lift+.055)*SCALE,nextTop=floor()+(nextLift+.055)*SCALE;
+      const underside=floorHeightAt(pallet.x,pallet.z)+pallet.y+.065;
+      if(lifting>0&&!f.carrying&&!f.delivered&&forkContact()&&forkTop<=underside+.012&&nextTop>=underside-.012) {
+        f.carrying=true;
+        f.loadOffset=local(pallet.x-f.x,pallet.z-f.z,-f.yaw);
+        f.loadYaw=angle(pallet.yaw-f.yaw);
       }
-      f.lift=clamp(f.lift+lifting*dt*.35,0,.65);
-      if(f.carrying){const p=socket();pallet.x=p[0];pallet.z=p[1];pallet.y=Math.max(0,(f.lift+.055)*SCALE-.065);pallet.yaw=f.yaw;}
+      f.lift=nextLift;
+      if(f.carrying){const p=local(...f.loadOffset);pallet.x=f.x+p[0];pallet.z=f.z+p[1];pallet.y=Math.max(0,(f.lift+.055)*SCALE-.065);pallet.yaw=f.yaw+f.loadYaw;}
       seatPlayer();
     } else if(f.mounted) {f.speed=0;controls.clear();keys.clear();}
     updateUI();
@@ -226,7 +280,7 @@ const Forklift34 = (() => {
     if(f.mounted&&$('staffPrompt'))$('staffPrompt').hidden=true;
     $('forkliftVisit34').disabled=f.status!=='ready'||f.mounted;
     $('forkliftStatus34').textContent=f.error|| (f.status!=='ready'?'Loading forklift…':
-      (f.delivered?'Delivered':f.carrying?'Pallet loaded':'Pallet awaiting pickup')+' · '+f.seconds.toFixed(1)+' s · '+f.bumps+' stops');
+      (f.delivered?'Delivered':f.carrying?'Pallet loaded':forkContact()?'Forks under pallet':'Pallet awaiting pickup')+' · '+f.seconds.toFixed(1)+' s · '+f.bumps+' stops');
   }
   // Rebuild clearance after booth edits without relocating an occupied vehicle.
   function invalidate(){if(!f.model)return;try{f.grid=makeGrid();if(!NAV.allowed(f.grid,f.x,f.z)){f.speed=0;f.error='A booth blocks the forklift. Move it or restart the challenge.';}else f.error=null;}catch(e){f.error=e.message;f.speed=0;}}
@@ -239,7 +293,7 @@ const Forklift34 = (() => {
   return {init,update,draw,visit,enter,exit,release,reset,seatedPose,invalidate,
     blocksWalker,
     get mounted(){return f.mounted;},snapshot:()=>({...f,model:!!f.model,grid:undefined,saved:undefined,pallet:{...pallet},destination,origin}),
-    test:{state:f,controls,socket,near,local}};
+    test:{state:f,controls,socket,near,local,forkContact}};
 })();
 window.Forklift34=Forklift34;
 
