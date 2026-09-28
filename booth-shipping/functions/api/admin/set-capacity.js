@@ -9,11 +9,11 @@ import { json, badRequest } from '../../_lib.js';
 // simulation, not a guess; keep in sync with venue-frame.html's
 // LAYOUT_SCALE_STEPS/LAYOUT_MIN_SCALE/LAYOUT_AISLE_GAP if those ever change.
 const SECTOR_MAX_CAPACITY = {
-  Manufacturing: 71,
-  'Health Science': 75,
-  Agribusiness: 70,
-  Construction: 72,
-  'Information Technology': 61,
+  Manufacturing: 60,
+  'Health Science': 61,
+  Agribusiness: 57,
+  Construction: 55,
+  'Information Technology': 52,
 };
 
 // Grows or shrinks how many slots a sector has. Growing inserts new 'open'
