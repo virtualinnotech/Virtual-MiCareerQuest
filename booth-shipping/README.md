@@ -302,3 +302,15 @@ to `npx wrangler deploy` (the dashboard's own default -- not
 `wrangler pages deploy`, which targets a different, older product and
 fails with a misleading authentication error against a Worker), and the
 **Root directory** / **Path** to `booth-shipping`.
+
+**Production branch: `main`.** (Earlier builds came from a Claude working
+branch; the full game is on `main`.) The one build command above does
+everything through npm hooks: `presync:design-page:remote` copies the game
+files into `public/` (`scripts/sync-forklift.cjs`; those copies are not
+committed), and `postsync:design-page:remote` uploads the student page
+(`venue.html`) and the game files too big for Cloudflare's 25 MB static-asset
+limit to R2. Those big files are listed in `public/.assetsignore` (so the
+asset upload skips them), uploaded by `scripts/upload-large-assets.cjs` to
+`static/<path>`, and served by `src/index.js` with edge caching.
+`wrangler.toml`'s `[build]` runs the copy again before every deploy, so a
+deploy can never upload an empty `public/`.
