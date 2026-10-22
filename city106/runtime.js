@@ -275,11 +275,16 @@ window.City106=(()=>{
   }return false;
  }
  function actorVisible(x,y,z){return !hiddenBox([x-.6,y-.15,z-.6],[x+.6,y+1.45,z+.6]);}
+ // Plane tests as plain loops (no function per call); "is the camera in the
+ // hotel lobby" is the same for every piece in a frame, so it is asked once.
+ function boxInPlanes164(planes,lo,hi){for(let i=0;i<planes.length;i++){const p=planes[i];if(!(p[0]*(p[0]>=0?hi[0]:lo[0])+p[1]*(p[1]>=0?hi[1]:lo[1])+p[2]*(p[2]>=0?hi[2]:lo[2])+p[3]>=-.01))return false;}return true;}
+ let lobbyPlanes164=null,lobby164=false;
+ function insideLobby164(planes){const ask=()=>!!(window.HotelScene146?.ready&&window.HotelCore146?.insideLobby150(camera));if(!planes||planes!==framePlanes160)return ask();if(lobbyPlanes164!==planes){lobbyPlanes164=planes;lobby164=ask();}return lobby164;}
  function visible(b,planes){
-  if(occlusion&&!b.sky&&b.localBounds106&&window.HotelScene146?.ready&&window.HotelCore146?.insideLobby150(camera)){
+  if(occlusion&&!b.sky&&b.localBounds106&&insideLobby164(planes)){
    const box=worldBounds150(b,b.modelMatrix);if(HotelCore146.lobbyOccludes150(box.lo,box.hi,camera))return false;
   }
-  if(!b.cullBounds106)return true;const {lo,hi}=b.cullBounds106;return planes.every(p=>p[0]*(p[0]>=0?hi[0]:lo[0])+p[1]*(p[1]>=0?hi[1]:lo[1])+p[2]*(p[2]>=0?hi[2]:lo[2])+p[3]>=-.01)&&!hiddenBox(lo,hi);
+  if(!b.cullBounds106)return true;const {lo,hi}=b.cullBounds106;return boxInPlanes164(planes,lo,hi)&&!hiddenBox(lo,hi);
  }
  function drawVisible(b,matrix){
   if(window.CityMaterials129?.pass)return true;
@@ -287,13 +292,14 @@ window.City106=(()=>{
   const box=worldBounds150(b,matrix||b.modelMatrix),{lo,hi}=box;
   // Custom exhibits/furniture use drawBatch directly, outside the main batch
   // filter. Bind-pose bounds are deliberately never used for animated actors.
-  if(culling&&framePlanes160&&!framePlanes160.every(p=>p[0]*(p[0]>=0?hi[0]:lo[0])+p[1]*(p[1]>=0?hi[1]:lo[1])+p[2]*(p[2]>=0?hi[2]:lo[2])+p[3]>=-.01))return false;
+  if(culling&&framePlanes160&&!boxInPlanes164(framePlanes160,lo,hi))return false;
   return !hiddenBox(lo,hi);
  }
  function worldBounds150(b,m){
   if(!m)return b.localBounds106;
   let cached=b.worldBounds106;
-  if(!cached||cached.matrix.some((v,i)=>v!==m[i])){
+  let stale=!cached;if(cached){const c=cached.matrix;for(let i=0;i<c.length;i++)if(c[i]!==m[i]){stale=true;break;}}
+  if(stale){
    const {lo,hi}=b.localBounds106,a=[Infinity,Infinity,Infinity],z=[-Infinity,-Infinity,-Infinity];
    for(const x of[lo[0],hi[0]])for(const y of[lo[1],hi[1]])for(const zz of[lo[2],hi[2]]){const p=tp(m,x,y,zz);for(let k=0;k<3;k++){a[k]=Math.min(a[k],p[k]);z[k]=Math.max(z[k],p[k]);}}
    cached=b.worldBounds106={matrix:Array.from(m),lo:a,hi:z};

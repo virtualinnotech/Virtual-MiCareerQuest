@@ -18,7 +18,7 @@
 <script src="./city106/road-pose117.js?v=20261019-performance150"></script>
 <script src="./city106/life111.js?v=20261021-crash162"></script>
 <script src="./city106/tree-pits137/core.js?v=20261017-treepits137"></script>
-<script src="./city106/runtime.js?v=20261022-pacing164"></script>
+<script src="./city106/runtime.js?v=20261022-lighter165"></script>
 <script src="./city106/lighting131/core.js?v=20261016-lighting131"></script>
 <script src="./city106/lighting131/runtime.js?v=20261022-pacing164"></script>
 <script src="./city106/materials129.js?v=20261021-crash162"></script>
@@ -67,7 +67,7 @@
 
 #controlsPopup,#missionListOverlay{position:fixed;inset:0;background:#050f1cd9;z-index:180;display:flex;align-items:center;justify-content:center;padding:20px}
 #controlsPopup.hidden,#missionListOverlay.hidden{display:none}
-#controlsCard{position:relative;max-width:600px;width:100%;background:linear-gradient(160deg,#0e2439,#0a1928);border:1px solid #5cd5e640;border-radius:18px;padding:26px 28px 22px;box-shadow:0 24px 60px #000000b3}
+#controlsCard{position:relative;max-width:600px;width:100%;max-height:calc(100vh - 40px);overflow:auto;background:linear-gradient(160deg,#0e2439,#0a1928);border:1px solid #5cd5e640;border-radius:18px;padding:26px 28px 22px;box-shadow:0 24px 60px #000000b3}
 #missionListCard{position:relative;max-width:520px;width:100%;max-height:80vh;overflow:auto;background:linear-gradient(160deg,#0e2439,#0a1928);border:1px solid #5cd5e640;border-radius:18px;padding:26px 24px 20px;box-shadow:0 24px 60px #000000b3}
 #controlsPopupClose,#missionListClose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:1px solid #ffffff30;background:#ffffff10;color:#eef7fd;font-size:16px;line-height:26px;text-align:center;cursor:pointer;padding:0}
 .controls-header,.ml-header{text-align:center}
@@ -77,7 +77,7 @@
 .controls-sub{font-size:12px;color:#a9c4d4;margin:0}
 .ml-sub{font-size:12px;color:#a9c4d4;margin:0 0 14px;text-align:left}
 .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
-.frame-rate164{margin-top:16px} #frameRate164{width:100%;padding:8px 10px;border-radius:8px;background:#152c40;color:#eef7fd;border:1px solid #ffffff30;font:inherit;font-size:13px;cursor:pointer} #frameRateNote164{font-size:12px;line-height:1.5;color:#a9c4d4;margin:8px 0 0}
+.setting164{width:100%;padding:8px 10px;border-radius:8px;background:#152c40;color:#eef7fd;border:1px solid #ffffff30;font:inherit;font-size:13px;cursor:pointer} .settingNote164{font-size:12px;line-height:1.5;color:#a9c4d4;margin:8px 0 0}
 
 .controls-block{background:#0c2032;border:1px solid #ffffff18;border-radius:12px;padding:14px 16px}
 .controls-block-heading{font-size:11px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:#8fd4e1;display:flex;align-items:center;gap:6px;margin-bottom:8px}
@@ -189,10 +189,17 @@ body>header .brand img{display:block;width:220px;height:auto;aspect-ratio:904/17
 <ul class="controls-list"><li><strong>Look around</strong><br>Move the mouse to look in any direction</li><li><strong>Zoom</strong><br>Scroll to zoom in and out</li><li><strong>Interact</strong><br>Press <strong>E</strong> to talk to nearby guides</li></ul>
 </div>
 </div>
-<div class="controls-block frame-rate164">
+<div class="controls-grid">
+<div class="controls-block">
 <label class="controls-block-heading" for="frameRate164"><span>🎞️</span> Frame rate</label>
-<select id="frameRate164"><option value="auto">Auto (recommended)</option><option value="steady30">Steady 30 fps</option><option value="max">As fast as possible</option></select>
-<p id="frameRateNote164"></p>
+<select id="frameRate164" class="setting164"><option value="auto">Auto (recommended)</option><option value="steady30">Steady 30 fps</option><option value="max">As fast as possible</option></select>
+<p id="frameRateNote164" class="settingNote164"></p>
+</div>
+<div class="controls-block">
+<label class="controls-block-heading" for="graphics165"><span>🖼️</span> Graphics</label>
+<select id="graphics165" class="setting164"><option value="auto">Auto (recommended)</option><option value="full">Full</option><option value="light">Light</option></select>
+<p id="graphicsNote165" class="settingNote164"></p>
+</div>
 </div>
 </div>
 </div>
@@ -575,13 +582,24 @@ function bindInstanceLayout160(vao,buffer){
  for(let i=0;i<4;i++){gl.enableVertexAttribArray(2+i);gl.vertexAttribPointer(2+i,4,gl.FLOAT,false,64,i*16);gl.vertexAttribDivisor(2+i,1);}
  instanceLayouts160.set(vao,buffer);
 }
+// Buildings stand still, so skip the upload when every matrix already matches
+// what the buffer holds. The main and sun-shadow passes share each buffer and
+// both upload through here, so pool.data always mirrors its contents.
+function uploadInstances164(pool,instances){
+ const refs=pool.refs||(pool.refs=[]);let same=pool.count===instances.length;
+ for(let i=0;i<instances.length;i++){const b=instances[i],m=b.modelMatrix,o=i*16;
+  // A different building in this slot (the usual case while moving) needs no comparison.
+  if(same&&refs[i]!==b)same=false;
+  if(same)for(let k=0;k<16;k++)if(pool.data[o+k]!==m[k]){same=false;break;}
+  if(!same){pool.data.set(m,o);refs[i]=b;}}
+ if(!same){pool.count=instances.length;gl.bufferSubData(gl.ARRAY_BUFFER,0,pool.data.subarray(0,instances.length*16));}
+}
 function drawBuildingInstances(batch,instances){gl.uniform1i(uniforms.uForceOpaque,0);gl.uniform1i(uniforms.uLogoMapped,0);gl.uniform1i(uniforms.uOutfitOn,0);gl.uniform1i(uniforms.uCrowd,0);gl.uniform1i(uniforms.uSkinned,0);gl.uniform1f(uniforms.uAlphaCutoff,batch.alphaCutoff??-1);StudentLooks32.bind(null);Hall32.bind(null);
  let pool=instanceBuffers.get(batch.sharedKey);
  if(!pool){pool={buffer:gl.createBuffer(),capacity:0,data:null};instanceBuffers.set(batch.sharedKey,pool);}
  gl.bindVertexArray(batch.vao);gl.bindBuffer(gl.ARRAY_BUFFER,pool.buffer);
- if(instances.length>pool.capacity){pool.capacity=Math.pow(2,Math.ceil(Math.log2(Math.max(8,instances.length))));pool.data=new Float32Array(pool.capacity*16);gl.bufferData(gl.ARRAY_BUFFER,pool.data.byteLength,gl.DYNAMIC_DRAW);}
- for(let i=0;i<instances.length;i++)pool.data.set(instances[i].modelMatrix,i*16);
- gl.bufferSubData(gl.ARRAY_BUFFER,0,pool.data.subarray(0,instances.length*16));
+ if(instances.length>pool.capacity){pool.capacity=Math.pow(2,Math.ceil(Math.log2(Math.max(8,instances.length))));pool.data=new Float32Array(pool.capacity*16);pool.count=-1;gl.bufferData(gl.ARRAY_BUFFER,pool.data.byteLength,gl.DYNAMIC_DRAW);}
+ uploadInstances164(pool,instances);
  bindInstanceLayout160(batch.vao,pool.buffer);
  gl.uniform1i(uniforms.uMapped,!!batch.baseTexture);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,batch.baseTexture||whiteBaseMap);gl.uniform1i(uniforms.uBaseMap,1);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,batch.normalTexture||whiteBaseMap);gl.uniform1i(uniforms.uNormalMap,2);gl.uniform1i(uniforms.uNormalMapped,!!batch.normalTexture);gl.uniform1f(uniforms.uNormalScale,batch.normalScale||.5);gl.activeTexture(gl.TEXTURE0);gl.uniform1i(uniforms.uInstanced,1);gl.uniform4fv(uniforms.uColor,batch.color);gl.uniform3fv(uniforms.uEmission,batch.emission);
  gl.uniform1f(uniforms.uMetal,batch.metal);gl.uniform1f(uniforms.uRough,batch.rough);gl.uniform1f(uniforms.uUnlit,0);gl.uniform1f(uniforms.uSurface,batch.surfaceType||0);
@@ -637,7 +655,7 @@ function updateCamera(dt,immediate=false){
  target=head;camera=add(head,mul(dir,smoothRadius));
 }
 function frustumPlanes(m){const out=[];for(let axis=0;axis<3;axis++)for(const sign of [-1,1]){const p=[m[3]+sign*m[axis],m[7]+sign*m[4+axis],m[11]+sign*m[8+axis],m[15]+sign*m[12+axis]],d=Math.hypot(p[0],p[1],p[2]);out.push(p.map(v=>v/d));}return out;}
-function sphereVisible(c,r,planes){return planes.every(p=>p[0]*c[0]+p[1]*c[1]+p[2]*c[2]+p[3]>=-r);}
+function sphereVisible(c,r,planes){for(let i=0;i<planes.length;i++){const p=planes[i];if(!(p[0]*c[0]+p[1]*c[1]+p[2]*c[2]+p[3]>=-r))return false;}return true;}
 function sectorOverviewVisible139(b){
  const s=state.overview?.sector139;if(!s)return true;
  if(b.shipmentId)return shippedBooths.get(b.shipmentId)?.industry===s.industry;
@@ -687,6 +705,43 @@ const FramePacing164=(()=>{
  };
 })();
 window.FramePacing164=FramePacing164;FramePacing164.installUI();
+/* Graphics (165). Auto keeps full graphics and switches to Light for the rest
+   of the visit only if the game still can't hold 30 fps: under 27 fps for 6
+   seconds of play, after its first 10 seconds. Light draws the 3D view at 75%
+   resolution and gives the crowd simpler models and 60% of the people;
+   switching back to Full restores exactly what was there. */
+const GraphicsMode165=(()=>{
+ const KEY='mcqGraphics165',MODES=['auto','full','light'];
+ let mode='auto',autoLight=false,started=false,applied=false,saved=null,played=0,lastDrawn=null,windowStart=0,windowFrames=0,slow=0;
+ try{const v=localStorage.getItem(KEY);if(MODES.includes(v))mode=v;}catch(e){}
+ const light=()=>mode==='light'||(mode==='auto'&&autoLight);
+ function note(){const el=document.getElementById('graphicsNote165');if(!el)return;
+  el.textContent=mode==='full'?'Full graphics on every computer.'
+   :mode==='light'?'Light: the 3D view is drawn at 75% resolution and the crowd uses simpler models and fewer people, so slower computers run smoother.'
+   :autoLight?'Auto switched to Light because this computer couldn\'t hold 30 fps: 75% resolution, simpler crowd models and fewer people.'
+   :'Auto is using full graphics. It switches to Light if this computer can\'t hold 30 fps.';}
+ function apply(){if(!started||light()===applied)return;applied=light();
+  if(applied){saved={quality:state.quality,detail:crowdState.detail,count:crowdState.targetCount};state.quality=Math.min(state.quality,.75);crowdState.detail='efficient';if(saved.count>0)setCrowdCount(Math.max(50,Math.round(saved.count*.6)));}
+  else if(saved){state.quality=saved.quality;crowdState.detail=saved.detail;if(saved.count!==crowdState.targetCount)setCrowdCount(saved.count);saved=null;}}
+ return {
+  // Once the crowd is set up, apply a saved Light choice.
+  start(){started=true;apply();note();},
+  // Every frame drawn while playing; same measuring rules as the frame rate.
+  drawn(t){
+   const gap=lastDrawn===null?0:t-lastDrawn;lastDrawn=t;
+   if(mode!=='auto'||autoLight||!started)return;
+   if(gap>250||(played+=gap)<10000){windowStart=t;windowFrames=0;return;}
+   windowFrames++;if(t-windowStart<2000)return;
+   slow=windowFrames*1000/(t-windowStart)<27?slow+1:0;windowStart=t;windowFrames=0;
+   if(slow>=3){autoLight=true;apply();note();}
+  },
+  set(next){if(!MODES.includes(next))return;mode=next;try{localStorage.setItem(KEY,next);}catch(e){}apply();note();},
+  installUI(){const sel=document.getElementById('graphics165');if(!sel)return;sel.value=mode;sel.onchange=()=>this.set(sel.value);note();},
+  get light(){return light();},
+  snapshot(){return {mode,light:light(),autoLight,applied};}
+ };
+})();
+window.GraphicsMode165=GraphicsMode165;GraphicsMode165.installUI();
 let renderBudget150=2400000,resolutionCheck150=0,resolutionGrow150=0,slowChecks164=0;
 function updateRenderBudget150(now){
  if(state.quality>=2||state.paused||document.hidden||!state.fps){resolutionCheck150=now;return;}
@@ -706,6 +761,21 @@ function renderSize150(width,height,dpr,quality,budget=2400000){
  const ratio=Math.min(dpr||1,quality,Math.sqrt(pixels/Math.max(1,width*height)));
  return [Math.max(1,Math.floor(width*ratio)),Math.max(1,Math.floor(height*ratio))];
 }
+// The pieces to draw this frame, split into opaque (in list order) and
+// see-through (far to near). Answers that are the same for every piece this
+// frame are worked out once, and each see-through piece's distance once.
+function frameBatches164(planes){
+ const opaque=[],seeThrough=[];if(window.FarmScene63?.active)return {opaque,transparent:seeThrough};
+ const sector=!!state.overview?.sector139,anchors=state.anchors,roofs=roofsVisible();
+ for(const b of renderBatches){
+  if(sector&&!sectorOverviewVisible139(b))continue;
+  if(b.hidden128||(b.anchor&&!anchors)||(b.roof&&!roofs))continue;
+  if(b.cullRadius&&!sphereVisible(b.center,b.cullRadius,planes))continue;
+  if(!City106.visible(b,planes))continue;
+  if(!b.transparent&&b.color[3]>=.995)opaque.push(b);else seeThrough.push({b,d:len(sub(b.center,camera))});
+ }
+ return {opaque,transparent:seeThrough.sort((x,y)=>y.d-x.d).map(x=>x.b)};
+}
 function render(){if(!state.ready||!gl||gl.isContextLost())return;if(window.CharacterInspector?.active){CharacterInspector.draw();return;}window.CityLife111?.present();CityLighting131.frame();StreetProps128.frame();Hospitality140.frame();if(!window.FarmScene63?.active)updateSunShadows();updateRenderBudget150(performance.now());const [w,h]=renderSize150(canvas.clientWidth,canvas.clientHeight,devicePixelRatio,state.quality,renderBudget150);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.clearColor(.73,.83,.89,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);const vp=mm(perspective(w/h),lookAt(camera,target)),planes=frustumPlanes(vp);gl.uniformMatrix4fv(uniforms.uVP,false,new Float32Array(vp));gl.uniform3fv(uniforms.uCamera,camera);gl.uniformMatrix4fv(uniforms.uLightVP,false,sunLightVP);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,sunDepth);gl.uniform1i(uniforms.uShadowMap,0);gl.uniform1f(uniforms.uShadowOn,state.sunShadows===false||window.FarmScene63?.active?0:1);bindSunBlend132();Hall32.frame();
  const light=window.FarmScene63?.active?null:state.modelStats.interiorLighting;
  if(light){
@@ -720,7 +790,7 @@ function render(){if(!state.ready||!gl||gl.isContextLost())return;if(window.Char
 
  City106.beginFrame(planes);
  CityMaterials129.frame(vp,w,h);
- const visible=(window.FarmScene63?.active?[]:renderBatches).filter(b=>sectorOverviewVisible139(b)&&!b.hidden128&&(!b.anchor||state.anchors)&&(!b.roof||roofsVisible())&&(!b.cullRadius||sphereVisible(b.center,b.cullRadius,planes))&&City106.visible(b,planes)),opaque=visible.filter(b=>!b.transparent&&b.color[3]>=.995),transparent=visible.filter(b=>b.transparent||b.color[3]<.995).sort((a,b)=>len(sub(b.center,camera))-len(sub(a.center,camera)));
+ const {opaque,transparent}=frameBatches164(planes);
  gl.depthMask(true);gl.disable(gl.BLEND);
  if(!window.FarmScene63?.active)window.HotelScene146?.drawShell150();
  const cityGroups=new Map(),vehicleNames=new Set(),buildingNames=new Set();let visibleBuildings=0,vehicleDrawCalls=0,buildingDrawCalls=0;
@@ -740,7 +810,7 @@ function render(){if(!state.ready||!gl||gl.isContextLost())return;if(window.Char
  * be built per frame, including initialization and missed update intervals.
  */
 let sunProgram,sunUniforms,sunFBO,sunDepth,sunLightVP,lastSunRoof=null;
-let sunNextDepth132,sunNextVP132,sunSlot132=null,sunBlend132=0,sunPending150=false;
+let sunNextDepth132,sunNextVP132,sunSlot132=null,sunBlend132=0,sunPending150=false,sunScratch164=null,sunJob164=null,sunNextReady164=false;
 const SUN_INTERVAL132=3;
 const SUN_MAP_SIZE=2048;
 function solarMatrix131(direction=City106.sunDirection){
@@ -766,7 +836,7 @@ function initSunShadows(){
  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
  return depth;
  }
- sunDepth=depthMap();sunNextDepth132=depthMap();sunNextVP132=sunLightVP;
+ sunDepth=depthMap();sunNextDepth132=depthMap();sunScratch164=depthMap();sunNextVP132=sunLightVP;
  sunFBO=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,sunFBO);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,sunDepth,0);gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);
  if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw Error('Sun shadow framebuffer unavailable.');gl.bindFramebuffer(gl.FRAMEBUFFER,null);
 }
@@ -774,29 +844,68 @@ function bindSunInstances(batch,instances){
  bindSunMaterial106(batch);
  let pool=instanceBuffers.get(batch.sharedKey);if(!pool){pool={buffer:gl.createBuffer(),capacity:0,data:null};instanceBuffers.set(batch.sharedKey,pool);}
  gl.bindVertexArray(batch.vao);gl.bindBuffer(gl.ARRAY_BUFFER,pool.buffer);
- if(instances.length>pool.capacity){pool.capacity=Math.pow(2,Math.ceil(Math.log2(Math.max(8,instances.length))));pool.data=new Float32Array(pool.capacity*16);gl.bufferData(gl.ARRAY_BUFFER,pool.data.byteLength,gl.DYNAMIC_DRAW);}
- for(let i=0;i<instances.length;i++)pool.data.set(instances[i].modelMatrix,i*16);gl.bufferSubData(gl.ARRAY_BUFFER,0,pool.data.subarray(0,instances.length*16));
+ if(instances.length>pool.capacity){pool.capacity=Math.pow(2,Math.ceil(Math.log2(Math.max(8,instances.length))));pool.data=new Float32Array(pool.capacity*16);pool.count=-1;gl.bufferData(gl.ARRAY_BUFFER,pool.data.byteLength,gl.DYNAMIC_DRAW);}
+ uploadInstances164(pool,instances);
  bindInstanceLayout160(batch.vao,pool.buffer);
  gl.uniform1i(sunUniforms.uInstanced,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,batch.ibo);gl.drawElementsInstanced(gl.TRIANGLES,batch.count,gl.UNSIGNED_INT,0,instances.length);
 }
 function updateSunShadows(){
- const clock=CityLighting131.snapshot(),slot=Math.floor(clock.cycle/SUN_INTERVAL132),roof=roofsVisible(),invalid=lastSunRoof!==roof||sunSlot132===null;
+ const clock=CityLighting131.snapshot(),slot=Math.floor(clock.cycle/SUN_INTERVAL132),roof=roofsVisible();
+ // First map, or roofs shown/hidden: draw now. Props knocked over (they reset
+ // lastSunRoof to null): redraw both maps a slice at a time instead.
+ const invalid=sunSlot132===null||lastSunRoof!==null&&lastSunRoof!==roof,refresh=!invalid&&lastSunRoof===null;
  // Disabled shadows and night-time views need no city-wide solar capture.
  if(state.sunShadows===false||clock.power<.001)return;
  // The enclosed lobby uses its own warm fixtures. Reuse the static outdoor
  // atlas seen through its windows; resume live solar captures on leaving.
- if(!invalid&&!sunPending150&&window.HotelCore146?.insideLobby150(camera))return;
+ if(!invalid&&!refresh&&!sunPending150&&!sunJob164&&window.HotelCore146?.insideLobby150(camera))return;
  sunBlend132=clock.cycle/SUN_INTERVAL132-slot;
  if(invalid){
+  sunJob164=null;sunNextReady164=false;
   sunLightVP=solarMatrix131(CityClock131.sample(slot*SUN_INTERVAL132).sun);drawSolarMap132(sunDepth,sunLightVP);
   sunNextVP132=sunLightVP;sunBlend132=0;sunPending150=true;sunSlot132=slot;lastSunRoof=roof;return;
  }
- if(!sunPending150&&slot===sunSlot132)return;
- if(!sunPending150){[sunDepth,sunNextDepth132]=[sunNextDepth132,sunDepth];sunLightVP=sunNextVP132;}
- // Reuse the already-rendered endpoint after a slow frame; never render both
- // endpoints to catch up and thereby make the next frame miss its deadline.
- sunNextVP132=solarMatrix131(CityClock131.sample((slot+1)*SUN_INTERVAL132).sun);drawSolarMap132(sunNextDepth132,sunNextVP132);
- sunSlot132=slot;lastSunRoof=roof;sunPending150=false;
+ if(refresh){lastSunRoof=roof;sunPending150=false;sunJob164=sunJob164?.kind==='current'?sunJob164:startSunJob164('current',solarMatrix131(CityClock131.sample(sunSlot132*SUN_INTERVAL132).sun));}
+ else if(!sunJob164&&(sunPending150||slot!==sunSlot132)){
+  if(!sunPending150){[sunDepth,sunNextDepth132]=[sunNextDepth132,sunDepth];sunLightVP=sunNextVP132;}
+  // Reuse the already-rendered endpoint after a slow frame; never render both
+  // endpoints to catch up and thereby make the next frame miss its deadline.
+  sunNextReady164=false;sunJob164=startSunJob164('next',solarMatrix131(CityClock131.sample((slot+1)*SUN_INTERVAL132).sun));
+  sunSlot132=slot;lastSunRoof=roof;sunPending150=false;
+ }
+ // Until the next map is complete, show the current map alone.
+ if(!sunNextReady164)sunBlend132=0;
+ if(!sunJob164||!stepSunJob164(sunJob164))return;
+ const job=sunJob164;sunJob164=null;
+ if(job.kind==='current'){[sunDepth,sunScratch164]=[sunScratch164,sunDepth];sunLightVP=job.matrix;sunJob164=startSunJob164('next',solarMatrix131(CityClock131.sample((sunSlot132+1)*SUN_INTERVAL132).sun));}
+ else{[sunNextDepth132,sunScratch164]=[sunScratch164,sunNextDepth132];sunNextVP132=job.matrix;sunNextReady164=true;sunBlend132=clock.cycle/SUN_INTERVAL132-slot;}
+}
+// A sun-shadow refresh draws the whole venue and city again from the sun. In
+// one frame that is a hitch every few seconds on slower computers, so routine
+// refreshes are drawn about 300 pieces per frame into a spare map that only
+// replaces the old one once complete; until then shadows keep their last look.
+const SUN_SLICE164=300;
+function startSunJob164(kind,matrix){return {kind,matrix,list:renderBatches,planes:frustumPlanes(matrix),groups:new Map(),i:0,started:false};}
+function stepSunJob164(job){
+ gl.bindFramebuffer(gl.FRAMEBUFFER,sunFBO);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,sunScratch164,0);gl.viewport(0,0,SUN_MAP_SIZE,SUN_MAP_SIZE);gl.depthMask(true);gl.disable(gl.BLEND);gl.enable(gl.DEPTH_TEST);
+ if(!job.started){gl.clear(gl.DEPTH_BUFFER_BIT);job.started=true;}
+ gl.useProgram(sunProgram);gl.uniformMatrix4fv(sunUniforms.uLightVP,false,job.matrix);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1.1,2.0);
+ const roofs=roofsVisible();let drawn=0;
+ while(job.i<job.list.length&&drawn<SUN_SLICE164)if(drawSunPiece164(job.list[job.i++],job.planes,job.groups,roofs))drawn++;
+ const done=job.i>=job.list.length;
+ if(done)for(const group of job.groups.values())bindSunInstances(group[0],group);
+ gl.disable(gl.POLYGON_OFFSET_FILL);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.bindVertexArray(null);gl.useProgram(program);
+ return done;
+}
+// One piece of the sun-shadow map: true when drawn now, false when skipped or
+// collected into an instanced group drawn at the end.
+function drawSunPiece164(b,planes,groups,roofs){
+ if(b.hidden128||b.animated||b.sky||b.anchor||b.transparent||b.color[3]<.995||b.roof&&!roofs)return false;
+ if(b.cullRadius&&!sphereVisible(b.center,b.cullRadius,planes))return false;
+ if(b.skyline||b.sceneInstance){if(!groups.has(b.sharedKey))groups.set(b.sharedKey,[]);groups.get(b.sharedKey).push(b);return false;}
+ bindSunMaterial106(b);
+ gl.uniform1i(sunUniforms.uInstanced,0);gl.uniformMatrix4fv(sunUniforms.uModel,false,b.modelMatrix||IDENTITY);gl.bindVertexArray(b.vao);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b.ibo);gl.drawElements(gl.TRIANGLES,b.count,gl.UNSIGNED_INT,0);
+ return true;
 }
 function bindSunBlend132(){
  if(CityLighting131.snapshot().power<.001)gl.uniform1f(uniforms.uShadowOn,0);
@@ -806,13 +915,8 @@ function bindSunBlend132(){
 function drawSolarMap132(depth,matrix){
  gl.bindFramebuffer(gl.FRAMEBUFFER,sunFBO);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,depth,0);gl.viewport(0,0,SUN_MAP_SIZE,SUN_MAP_SIZE);gl.depthMask(true);gl.disable(gl.BLEND);gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);
  gl.useProgram(sunProgram);gl.uniformMatrix4fv(sunUniforms.uLightVP,false,matrix);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1.1,2.0);
- const planes=frustumPlanes(matrix),groups=new Map();
- for(const b of renderBatches){if(b.hidden128||b.animated||b.sky||b.anchor||b.transparent||b.color[3]<.995||b.roof&&!roofsVisible())continue;
-  if(b.cullRadius&&!sphereVisible(b.center,b.cullRadius,planes))continue;
-  if(b.skyline||b.sceneInstance){if(!groups.has(b.sharedKey))groups.set(b.sharedKey,[]);groups.get(b.sharedKey).push(b);continue;}
-  bindSunMaterial106(b);
-  gl.uniform1i(sunUniforms.uInstanced,0);gl.uniformMatrix4fv(sunUniforms.uModel,false,b.modelMatrix||IDENTITY);gl.bindVertexArray(b.vao);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b.ibo);gl.drawElements(gl.TRIANGLES,b.count,gl.UNSIGNED_INT,0);
- }
+ const planes=frustumPlanes(matrix),groups=new Map(),roofs=roofsVisible();
+ for(const b of renderBatches)drawSunPiece164(b,planes,groups,roofs);
  for(const group of groups.values())bindSunInstances(group[0],group);
  gl.disable(gl.POLYGON_OFFSET_FILL);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.bindVertexArray(null);gl.useProgram(program);
 }
@@ -2451,7 +2555,7 @@ $('places').onchange=e=>teleport(e.target.value,true);$('cameraBtn').onclick=()=
 $('ghostCheck').onchange=()=>toggle('ghost');$('boundaryCheck').onchange=()=>toggle('boundaries');$('roofCheck').onchange=e=>{state.roofs=e.target.checked;if(state.overview)state.overview.cutawayRoof=false;updateHud();render();};$('restoreRoofs').onclick=()=>{state.roofs=true;if(state.overview)state.overview.cutawayRoof=false;updateHud();render();};$('sculptureMotion').onchange=e=>{LandmarkMotion.setEnabled(e.target.checked);canvas.focus();};$('anchorCheck').onchange=()=>toggle('anchors');$('speed').onchange=e=>{state.speed=Number(e.target.value);keys.clear();};$('quality').onchange=e=>state.quality=Number(e.target.value);$('shadowCheck').onchange=e=>state.sunShadows=e.target.checked;
 $('indoorGain').addEventListener('change',e=>{state.indoorGain=Number(e.target.value);render();});
 let hudTime=0;
-function loop(t){if(MCQDiagnostics18.contextLost)return;if(FramePacing164.skip(t,lastTime)){requestAnimationFrame(loop);return;}frameClock164=t;if(state.ready&&!state.paused)FramePacing164.drawn(t);const dt=Math.min((t-lastTime)/1000,.065),motionDelta=(t-lastTime)/1000;lastTime=t;if(window.CharacterInspector?.active){CharacterInspector.update(dt);render();requestAnimationFrame(loop);return;}if(state.ready&&!state.paused){if(window.FarmScene63?.active)FarmScene63.update(dt);else{advanceLandmarkMotion(motionDelta);RobotExhibit20.update(dt);}if(window.AnimatedCharacters)AnimatedCharacters.update(dt);if(!window.FarmScene63?.active){if(window.Crowd)Crowd.update(dt);EventFlow22.update(dt);window.CityLife111?.update(dt);}if(state.overview){render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}requestAnimationFrame(loop);return;}accumulator=Math.min(accumulator+dt,.09);const input=readInput();while(accumulator>=PHYSICS.step){advanceFramePlayer132(PHYSICS.step,input);accumulator-=PHYSICS.step;}updateCamera(dt);render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}if(t-hudTime>120){updateHud();hudTime=t;}}requestAnimationFrame(loop);}
+function loop(t){if(MCQDiagnostics18.contextLost)return;if(FramePacing164.skip(t,lastTime)){requestAnimationFrame(loop);return;}frameClock164=t;if(state.ready&&!state.paused){FramePacing164.drawn(t);GraphicsMode165.drawn(t);}const dt=Math.min((t-lastTime)/1000,.065),motionDelta=(t-lastTime)/1000;lastTime=t;if(window.CharacterInspector?.active){CharacterInspector.update(dt);render();requestAnimationFrame(loop);return;}if(state.ready&&!state.paused){if(window.FarmScene63?.active)FarmScene63.update(dt);else{advanceLandmarkMotion(motionDelta);RobotExhibit20.update(dt);}if(window.AnimatedCharacters)AnimatedCharacters.update(dt);if(!window.FarmScene63?.active){if(window.Crowd)Crowd.update(dt);EventFlow22.update(dt);window.CityLife111?.update(dt);}if(state.overview){render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}requestAnimationFrame(loop);return;}accumulator=Math.min(accumulator+dt,.09);const input=readInput();while(accumulator>=PHYSICS.step){advanceFramePlayer132(PHYSICS.step,input);accumulator-=PHYSICS.step;}updateCamera(dt);render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}if(t-hudTime>120){updateHud();hudTime=t;}}requestAnimationFrame(loop);}
 // Small deterministic QA surface: controls only this local, offline harness.
 window.__walktest={roofsVisible,motion:window.LandmarkMotion,state,player,teleport,report:getReport,colliders,render:()=>{updateCamera(0,true);render();updateHud();},setPosition:(p,yaw=0)=>{player.position=[...p];player.yaw=yaw;player.vy=0;player.grounded=false;contact=null;},step:(seconds,input={})=>{const start=[...player.position];for(let i=0;i<Math.ceil(seconds/PHYSICS.step);i++)advancePlayer(PHYSICS.step,input);updateCamera(0,true);render();updateHud();return{start,end:[...player.position],grounded:player.grounded,contact:contact?.name||null};},raycast,resolveEllipsoid,shouldCollide,stats:()=>state.modelStats};
 for(const [key,p] of Object.entries(places)){if(!$('places').querySelector('option[value="'+key+'"]')){const o=document.createElement('option');o.value=key;o.textContent=p.label;$('places').append(o);}}
@@ -2728,45 +2832,64 @@ const Performance21 = (() => {
   b.cullRadius=radius+.01;
  }
  function cacheGL(native){
-  meter.native=native;const funcs=new Map(),constants=new Map(),u=new Map(),textures=new Map(),caps=new Map();let program=Symbol(),vao=Symbol(),active=Symbol(),depth=Symbol();
-  const clear=()=>{u.clear();textures.clear();caps.clear();program=Symbol();vao=Symbol();active=Symbol();depth=Symbol();};meter.clearState=clear;let draws161=0;
-  function submit(fn,args){if(meter.active)meter.submitted++;return fn.apply(native,args);}
-  function skip(){if(meter.active)meter.suppressed++;}
-  return new Proxy(native,{get(target,key){
-   if(funcs.has(key))return funcs.get(key);
-   if(constants.has(key))return constants.get(key);
-   const value=Reflect.get(target,key,target);if(typeof value!=='function'){if(typeof key==='string'&&/^[A-Z][A-Z0-9_]*$/.test(key)&&typeof value==='number')constants.set(key,value);return value;}
-   let fn;
-   if(/^uniform(?:[1-4][fi]|[1-4][fi]v|Matrix[234]fv)$/.test(key)){
-    fn=function(...a){if(a[0]===null){skip();return;}if(!meter.stateCaching)return submit(value,a);
-     const matrix=key.startsWith('uniformMatrix'),array=key.endsWith('v'),values=array?a[matrix?2:1]:a.slice(1),offset=array?(a[matrix?3:2]||0):0,length=array?(a[matrix?4:3]||values.length-offset):values.length;
-     let rec=u.get(a[0]),same=!!rec&&rec.key===key&&rec.program===program&&rec.length===length&&rec.transpose===(matrix?!!a[1]:false);
-     if(same)for(let i=0;i<length;i++)if(rec.values[i]!==Number(values[offset+i])){same=false;break;}
-     if(same){skip();return;}
-     if(!rec||rec.length!==length)rec={values:new Float64Array(length)};
-     rec.key=key;rec.program=program;rec.length=length;rec.transpose=matrix?!!a[1]:false;for(let i=0;i<length;i++)rec.values[i]=values[offset+i];u.set(a[0],rec);return submit(value,a);
-    };
-   }else if(key==='useProgram')fn=function(p){if(meter.stateCaching&&program===p){skip();return;}program=p;return submit(value,[p]);};
-   else if(key==='activeTexture')fn=function(t){if(meter.stateCaching&&active===t){skip();return;}active=t;return submit(value,[t]);};
-   else if(key==='bindTexture')fn=function(t,obj){const k=String(active)+':'+t;if(meter.stateCaching&&textures.has(k)&&textures.get(k)===obj){skip();return;}textures.set(k,obj);return submit(value,[t,obj]);};
-   else if(key==='bindVertexArray')fn=function(obj){if(meter.stateCaching&&vao===obj){skip();return;}vao=obj;return submit(value,[obj]);};
-   else if(key==='depthMask')fn=function(v){if(meter.stateCaching&&depth===v){skip();return;}depth=v;return submit(value,[v]);};
-   else if(key==='enable'||key==='disable')fn=function(c){const v=key==='enable';if(meter.stateCaching&&caps.has(c)&&caps.get(c)===v){skip();return;}caps.set(c,v);return submit(value,[c]);};
-   else if(key==='drawElements'||key==='drawArrays'||key==='drawElementsInstanced'||key==='drawArraysInstanced')fn=function(...a){
-    if(meter.active){const n=key.includes('Elements')?a[1]:a[2],instances=key.endsWith('Instanced')?a[key.includes('Elements')?4:3]:1;meter.draws++;if(a[0]===native.TRIANGLES)meter.triangles+=n/3*instances;const g=meter.groups[meter.phase]||(meter.groups[meter.phase]={calls:0,triangles:0});g.calls++;if(a[0]===native.TRIANGLES)g.triangles+=n/3*instances;}
-    const out=value.apply(native,a);
-    // The browser's WebGL-to-Metal layer keeps a pool for draws that change
-    // shader values and never shrinks it: one frame with a few thousand such
-    // draws (a full venue's booths in a sun-shadow refresh) left every later
-    // frame 6-10x slower. Submitting queued work every 250 draws keeps that
-    // pool small. Nothing on screen changes.
-    if(++draws161>=250){draws161=0;native.flush();}
-    return out;
-   };
-   else if(key==='deleteTexture'||key==='deleteProgram'||key==='deleteVertexArray'||key==='linkProgram')fn=function(...a){clear();return value.apply(native,a);};
-   else fn=value.bind(native);
-   funcs.set(key,fn);return fn;
-  }});
+  // Every WebGL function and constant becomes an ordinary property of one
+  // plain object, so each gl.x in the game is a normal property read rather
+  // than a Proxy lookup. Redundant state calls are skipped exactly as before;
+  // uniform values are remembered on the location object itself and texture
+  // bindings under numeric keys, instead of Map lookups and string keys.
+  meter.native=native;let program=Symbol(),vao=Symbol(),active=-1,depth=Symbol(),gen=1,draws161=0;
+  const textures=new Map(),caps=new Map(),wrapped={};
+  const clear=()=>{gen++;textures.clear();caps.clear();program=Symbol();vao=Symbol();active=-1;depth=Symbol();};meter.clearState=clear;
+  const submitted=()=>{if(meter.active)meter.submitted++;},skip=()=>{if(meter.active)meter.suppressed++;};
+  let kinds=0;
+  function scalarUniform(value,n){const kind=++kinds;return function(loc,x,y,z,w){
+   if(loc==null){skip();return;}
+   if(meter.stateCaching){let r=loc.c164;
+    if(r&&!r.values&&r.gen===gen&&r.kind===kind&&r.program===program&&r.x===+x&&(n<2||r.y===+y)&&(n<3||r.z===+z)&&(n<4||r.w===+w)){skip();return;}
+    if(!r||r.values)r=loc.c164={gen:0,kind:0,program:null,x:0,y:0,z:0,w:0};
+    r.gen=gen;r.kind=kind;r.program=program;r.x=+x;r.y=+y;r.z=+z;r.w=+w;}
+   submitted();return n===1?value.call(native,loc,x):n===2?value.call(native,loc,x,y):n===3?value.call(native,loc,x,y,z):value.call(native,loc,x,y,z,w);};}
+  function vectorUniform(value,matrix){const kind=++kinds;return function(loc,a,b,c,d){
+   if(loc==null){skip();return;}
+   if(meter.stateCaching){const values=matrix?b:a,offset=(matrix?c:b)||0,length=(matrix?d:c)||values.length-offset,transpose=matrix?!!a:false;
+    let r=loc.c164,same=!!r&&!!r.values&&r.gen===gen&&r.kind===kind&&r.program===program&&r.length===length&&r.transpose===transpose;
+    if(same){const v=r.values;for(let i=0;i<length;i++)if(v[i]!==+values[offset+i]){same=false;break;}}
+    if(same){skip();return;}
+    if(!r||!r.values||r.values.length!==length)r=loc.c164={values:new Float64Array(length)};
+    r.gen=gen;r.kind=kind;r.program=program;r.length=length;r.transpose=transpose;for(let i=0;i<length;i++)r.values[i]=values[offset+i];}
+   submitted();return value.apply(native,arguments);};}
+  function counted(key,value){const elements=key.includes('Elements'),instanced=key.endsWith('Instanced');return function(){
+   if(meter.active){const n=elements?arguments[1]:arguments[2],instances=instanced?arguments[elements?4:3]:1;meter.draws++;if(arguments[0]===native.TRIANGLES)meter.triangles+=n/3*instances;const g=meter.groups[meter.phase]||(meter.groups[meter.phase]={calls:0,triangles:0});g.calls++;if(arguments[0]===native.TRIANGLES)g.triangles+=n/3*instances;}
+   const out=value.apply(native,arguments);
+   // The browser's WebGL-to-Metal layer keeps a pool for draws that change
+   // shader values and never shrinks it: one frame with a few thousand such
+   // draws (a full venue's booths in a sun-shadow refresh) left every later
+   // frame 6-10x slower. Submitting queued work every 250 draws keeps that
+   // pool small. Nothing on screen changes.
+   if(++draws161>=250){draws161=0;native.flush();}
+   return out;};}
+  function wrap(key,value){
+   const u=/^uniform(Matrix)?([1-4])[fi](v)?$/.exec(key);
+   if(u)return u[1]||u[3]?vectorUniform(value,!!u[1]):scalarUniform(value,+u[2]);
+   if(key==='useProgram')return function(p){if(meter.stateCaching&&program===p){skip();return;}program=p;submitted();return value.call(native,p);};
+   if(key==='activeTexture')return function(t){if(meter.stateCaching&&active===t){skip();return;}active=t;submitted();return value.call(native,t);};
+   if(key==='bindTexture')return function(t,obj){const k=active*65536+t;if(meter.stateCaching&&textures.has(k)&&textures.get(k)===obj){skip();return;}textures.set(k,obj);submitted();return value.call(native,t,obj);};
+   if(key==='bindVertexArray')return function(obj){if(meter.stateCaching&&vao===obj){skip();return;}vao=obj;submitted();return value.call(native,obj);};
+   if(key==='depthMask')return function(v){if(meter.stateCaching&&depth===v){skip();return;}depth=v;submitted();return value.call(native,v);};
+   if(key==='enable'||key==='disable'){const on=key==='enable';return function(c){if(meter.stateCaching&&caps.has(c)&&caps.get(c)===on){skip();return;}caps.set(c,on);submitted();return value.call(native,c);};}
+   if(key==='drawElements'||key==='drawArrays'||key==='drawElementsInstanced'||key==='drawArraysInstanced')return counted(key,value);
+   if(key==='deleteTexture'||key==='deleteProgram'||key==='deleteVertexArray'||key==='linkProgram')return function(){clear();return value.apply(native,arguments);};
+   return value.bind(native);
+  }
+  for(let proto=Object.getPrototypeOf(native);proto&&proto!==Object.prototype;proto=Object.getPrototypeOf(proto))
+   for(const key of Object.getOwnPropertyNames(proto)){
+    if(key==='constructor'||Object.prototype.hasOwnProperty.call(wrapped,key))continue;
+    const d=Object.getOwnPropertyDescriptor(proto,key);
+    if(d.get||d.set)Object.defineProperty(wrapped,key,{get:d.get?()=>d.get.call(native):undefined,set:d.set?v=>d.set.call(native,v):undefined,enumerable:true});
+    else if(typeof d.value==='function')wrapped[key]=wrap(key,d.value);
+    else wrapped[key]=d.value;
+   }
+  return wrapped;
  }
  function invalidateDebug(){meter.debugDirty=true;if(meter.debugOwned.length){for(const b of meter.debugOwned)freeBatch(b);meter.debugOwned=[];}}
  function ensureDebug(){if(!meter.debugDirty)return;invalidateDebug();const groups=new Map();for(const o of colliders){const verts=new Float32Array(o.triangles.length*18),ids=new Uint32Array(o.triangles.length*3);let at=0,i=0;for(const t of o.triangles)for(const p of [t.a,t.b,t.c]){verts.set([...p,...t.normal],at);at+=6;ids[i]=i;i++;}batchAdd(groups,o.boundary?'boundary':'structure',verts,ids,{boundary:o.boundary,unlit:true});}meter.debugOwned=finishBatches(groups);debugBatches=meter.debugOwned;meter.debugDirty=false;}
@@ -4275,7 +4398,7 @@ function revealStudentGamification(){
  state.ready=true;teleport('entrance');
  // A full fair is a large download on shared school Wi-Fi: allow 15 minutes.
   await Loading155.run('booths',async()=>{if(window.initVenueShipping){initVenueShipping();await venueLayoutReady;}if(STANDALONE_MODE){await loadShippedBoothsFromManifest();await prepareEmployerBooth();}},900000);
- if(window.HubGuide)HubGuide.init();RobotExhibit20.init();Hall32.init();charactersUI();crowdState.targetCount=lowPowerDevice?120:300;startCrowd();if(window.Crowd)Crowd.init();Performance21.installUI();EventFlow22.init();
+ if(window.HubGuide)HubGuide.init();RobotExhibit20.init();Hall32.init();charactersUI();crowdState.targetCount=lowPowerDevice?120:300;startCrowd();GraphicsMode165.start();if(window.Crowd)Crowd.init();Performance21.installUI();EventFlow22.init();
  await Loading155.prepareWorld();Hospitality140.preview();
  const previewParams=new URLSearchParams(location.search);
  if(!previewParams.has('challenge')&&!previewParams.has('sector')&&!employerModeParams()){
