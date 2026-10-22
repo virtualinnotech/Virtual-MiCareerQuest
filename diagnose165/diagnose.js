@@ -13,7 +13,9 @@
  box.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:400;background:#0f2433f2;color:#eef7fd;border:1px solid #5cd5e680;border-radius:12px;padding:12px 18px;font:600 15px system-ui,sans-serif;width:min(92vw,560px);text-align:center;box-shadow:0 10px 30px #0008';
  const say=text=>{box.textContent=text;};
 
- // GPU time per frame, where the browser allows timer queries.
+ // GPU time per frame, only with &gpu=1: reading the timer back makes Chrome
+ // wait for its graphics process every frame, which on a Chromebook slowed the
+ // game several times over and made every other number meaningless.
  function gpuTimer(){
   const g=MCQPerformance21.meter.native,ext=g?.getExtension('EXT_disjoint_timer_query_webgl2');if(!ext)return null;
   const pending=[],done=[],R=render;
@@ -42,7 +44,7 @@
   const report={format:'micareerquest-diagnose',version:1,id,at:new Date().toISOString(),userAgent:navigator.userAgent,cores:navigator.hardwareConcurrency||null,memoryGB:navigator.deviceMemory||null,
    screen:[screen.width,screen.height,devicePixelRatio],window:[innerWidth,innerHeight],renderer:MCQPerformance21.report().gpu?.renderer||null,booths:shippedBooths.size,people:crowdState.targetCount,
    before:{frameRate:FramePacing164.snapshot(),graphics:GraphicsMode165.snapshot()},phases:[],errors:[]};
-  const pacing=FramePacing164.snapshot().mode,graphics=GraphicsMode165.snapshot().mode,timer=gpuTimer();report.gpuTimer=!!timer;
+  const pacing=FramePacing164.snapshot().mode,graphics=GraphicsMode165.snapshot().mode,timer=new URLSearchParams(location.search).get('gpu')==='1'?gpuTimer():null;report.gpuTimer=!!timer;
   const saved={quality:null,shadows:state.sunShadows,crowdDraw:window.Crowd?.draw,rivianDraw:Rivian147.draw,rivianLighting:Rivian147.drawLighting,lights:Rivian147.test.state.lights};
   try{
    document.getElementById('controlsPopup')?.classList.add('hidden');
