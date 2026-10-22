@@ -25,6 +25,12 @@ export async function onRequestGet(context) {
   const booths = rows.results.map((b) => ({
     ...b,
     assetUrl: b.booth_asset_key ? `/${b.booth_asset_key}` : null,
+    // An optimized student copy (booths/<sector>/<n>.<hash>.opt.glb.gz) keeps
+    // the employer's original upload beside it; the game falls back to that
+    // if the optimized copy ever fails to load.
+    fallbackUrl: /\.opt\.glb\.gz$/.test(b.booth_asset_key || '')
+      ? `/${b.booth_asset_key.replace(/\.[0-9a-f]+\.opt\.glb\.gz$/, '.glb')}`
+      : null,
   }));
 
   const response = json({ generatedAt: new Date().toISOString(), booths });

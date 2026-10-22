@@ -53,6 +53,7 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
 .badge.claimed{background:#fff3e0;color:#b06b00}
 .badge.shipped{background:#e7f4ea;color:#1e7a3c}
 .badge.demo{background:#efe9fb;color:#5a3fb0}
+.badge.missing{background:#fde8eb;color:#ae1b2f;margin-left:4px}
 .muted{color:#8a9aa8}
 .status{font-size:13px;color:#607380;margin:10px 0}
 .status.error{color:#ae1b2f;font-weight:650}
@@ -121,6 +122,7 @@ td.demoCell{text-align:center}
   <input id="search" type="text" placeholder="Search by company, email or sector...">
  </div>
  <div id="status" class="status"></div>
+ <div id="fileCheck" class="status"></div>
  <table>
   <thead>
    <tr><th>Sector</th><th>#</th><th>Status</th><th>Company</th><th>Email</th><th>Shipped</th><th class="demoHead"><label title="Fill every empty slot with a demo booth (off removes them all)">Fill<input type="checkbox" id="fillToggle" class="switch"></label>Demo</th><th>Actions</th></tr>
@@ -134,7 +136,7 @@ td.demoCell{text-align:center}
 <script>
 const $=id=>document.getElementById(id);
 let adminKey=sessionStorage.getItem('mcqAdminKey')||'';
-let allSlots=[];
+let allSlots=[],missingFiles=new Set(),fileCheckRun=0;
 let boothsLocked=null,optimizing=false;
 
 function fmtDate(s){if(!s)return '';try{return new Date(s+'Z').toLocaleString();}catch(e){return s;}}
@@ -196,7 +198,7 @@ function renderRows(){
   <tr data-sector="${s.sector}" data-slot="${s.slot_number}">
    <td>${s.sector}</td>
    <td>${s.slot_number}</td>
-   <td><span class="badge ${s.status}">${s.status}</span></td>
+   <td><span class="badge ${s.status}">${s.status}</span>${missingFiles.has(s.sector+'#'+s.slot_number)?'<span class="badge missing" title="Students\' games leave this booth out until it is fixed">file missing</span>':''}</td>
    <td>${s.company_name||'<span class=\"muted\">—</span>'}</td>
    <td>${s.email||'<span class=\"muted\">—</span>'}</td>
    <td>${fmtDate(s.shipped_at)||'<span class=\"muted\">—</span>'}</td>
@@ -222,7 +224,22 @@ async function loadSlots(){
   renderRows();
   renderOptimize();
   $('status').textContent='';
+  checkBoothFiles();
  }catch(e){$('status').textContent=e.message;$('status').classList.add('error');}
+}
+
+// Every booth in the student fair must point at a file that exists; a booth
+// whose file is missing is left out of students' games, so flag it here.
+async function checkBoothFiles(){
+ const run=++fileCheckRun;
+ try{
+  const data=await api('/api/admin/check-booths');if(run!==fileCheckRun)return;
+  missingFiles=new Set(data.missing.map(m=>m.sector+'#'+m.slot_number));renderRows();
+  const names=data.missing.map(m=>m.sector+' #'+m.slot_number+(m.booth_name?' ('+m.booth_name+')':''));
+  setStatus('fileCheck',data.missing.length
+   ?data.missing.length+' booth'+(data.missing.length===1?' is':'s are')+' missing '+(data.missing.length===1?'its file':'their files')+' and will be left out of the student fair: '+names.slice(0,8).join(', ')+(names.length>8?', and '+(names.length-8)+' more':'')+'. Demo slots: switch Demo off and on. Employer booths: Edit in studio and ship again.'
+   :'All '+data.checked+' booth files are in place.',data.missing.length>0);
+ }catch(e){if(run===fileCheckRun)setStatus('fileCheck','Booth file check failed: '+e.message,true);}
 }
 
 $('rows').addEventListener('click',async e=>{

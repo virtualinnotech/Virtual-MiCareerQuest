@@ -85,6 +85,7 @@ functions/api/ship.js            POST -- claim-if-needed + upload the real GLB (
 functions/api/manifest.js        GET  -- what the student game reads, edge-cached
 functions/api/admin/fill-demo.js    POST -- {on} fill every open slot with a demo booth, or remove them all
 functions/api/admin/demo-slot.js    POST -- {sector, slotNumber, on} one slot's demo booth on/off
+functions/api/admin/check-booths.js GET  -- every booth in the fair whose file is missing
 functions/api/admin/list-booths.js  GET  -- every slot (incl. email), for the admin page
 functions/api/admin/reset-slot.js   POST -- clear a slot back to open, delete its R2 files
 functions/api/admin/update-slot.js  POST -- fix a typo'd contact email on an existing slot
@@ -138,6 +139,21 @@ one. Demo booths are 30 real booth-editor designs (5 per sector, from
 `/demo-booths/`, so they need no R2 uploads and download once per design
 however many slots use them. Use them to run the full venue before the
 employers ship, then turn Fill off.
+
+**Booth file check**: every time the slot list loads, the page checks
+that each booth in the fair points at a file that exists. Any that don't
+get a red **file missing** tag and are listed above the table, because
+students' games leave those booths out. A demo slot is fixed by switching
+its Demo off and on; an employer booth by **Edit in studio** and shipping
+again.
+
+**One booth can't stop the fair.** The student game tries each booth
+file three times (a download that sends nothing for 20 s counts as a
+failed try), then falls back to the employer's original upload if the
+optimized copy is what failed (`/api/manifest` gives each optimized booth
+a `fallbackUrl`). A booth that still won't load is left out and the venue
+opens without it; the browser console lists it as "Booth left out of the
+venue".
 
 **Booth editing** (lock): once every employer has finished, lock it
 before students play. While locked, `/api/ship` and `/api/claim` answer

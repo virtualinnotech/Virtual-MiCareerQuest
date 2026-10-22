@@ -24,6 +24,7 @@ import * as library from '../functions/api/admin/library.js';
 import * as optimizedBooth from '../functions/api/admin/optimized-booth.js';
 import * as optimizedUndo from '../functions/api/admin/optimized-undo.js';
 import * as demoSlot from '../functions/api/admin/demo-slot.js';
+import * as checkBooths from '../functions/api/admin/check-booths.js';
 import * as booths from '../functions/booths/[[path]].js';
 import computerOnly from '../../desktop141/device.js';
 
@@ -47,6 +48,7 @@ const ROUTES = [
   { method: 'POST', path: '/api/admin/optimized-booth', handler: optimizedBooth.onRequestPost },
   { method: 'POST', path: '/api/admin/optimized-undo', handler: optimizedUndo.onRequestPost },
   { method: 'POST', path: '/api/admin/demo-slot', handler: demoSlot.onRequestPost },
+  { method: 'GET', path: '/api/admin/check-booths', handler: checkBooths.onRequestGet },
 ];
 
 // The two links given out: /student (the fair) and /vendor (the booth

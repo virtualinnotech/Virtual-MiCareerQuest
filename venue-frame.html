@@ -1488,7 +1488,7 @@ async function expandShippedBooth162(buffer,assetUrl){
  const {json:j,bin}=parseGLB(buffer),linked=(j.images||[]).filter(im=>im.uri!=null&&im.bufferView==null);
  if(!linked.length)return buffer;
  const files=await Promise.all(linked.map(im=>{const url=new URL(im.uri,new URL(assetUrl,location.href)).href;
-  if(!boothLibrary162.has(url))boothLibrary162.set(url,fetch(url).then(r=>{if(!r.ok)throw Error('A shared booth texture could not load ('+r.status+').');return r.arrayBuffer();}).catch(e=>{boothLibrary162.delete(url);throw e;}));
+  if(!boothLibrary162.has(url))boothLibrary162.set(url,fetchBooth162(url,'default','A shared booth texture').catch(e=>{boothLibrary162.delete(url);throw e;}));
   return boothLibrary162.get(url);}));
  let size=(bin.byteLength+3)&~3;const at=files.map(f=>{const offset=size;size=(offset+f.byteLength+3)&~3;return offset;});
  const merged=new Uint8Array(size);merged.set(new Uint8Array(bin.buffer,bin.byteOffset,bin.byteLength));
@@ -1499,31 +1499,63 @@ async function expandShippedBooth162(buffer,assetUrl){
  dv.setUint32(20+jl,size,true);dv.setUint32(24+jl,0x004e4942,true);glb.set(merged,28+jl);
  return glb.buffer;
 }
+// One employer's booth must never keep students out of the fair. Each booth
+// file gets three tries (a download that sends nothing for 20 s counts as a
+// failure: school Wi-Fi can stall a request without ending it), then the
+// employer's original upload if the optimized copy is what failed. A booth
+// that still will not load is left out and the venue opens without it; the
+// admin page's booth file check is where organizers see that.
+async function fetchBooth162(url,cache,what){
+ const stop=new AbortController();let timer;const alive=()=>{clearTimeout(timer);timer=setTimeout(()=>stop.abort(),20000);};
+ try{
+  alive();const r=await fetch(url,{cache,signal:stop.signal});
+  if(!r.ok){r.body?.cancel().catch(()=>{});const e=Error(what+' could not load ('+r.status+').');e.status=r.status;throw e;}
+  const reader=r.body.getReader(),parts=[];let size=0;
+  for(;;){alive();const {done,value}=await reader.read();if(done)break;parts.push(value);size+=value.length;}
+  if(parts.length===1&&parts[0].byteOffset===0&&parts[0].byteLength===parts[0].buffer.byteLength)return parts[0].buffer;
+  const bytes=new Uint8Array(size);let at=0;for(const part of parts){bytes.set(part,at);at+=part.length;}
+  return bytes.buffer;
+ }catch(e){throw stop.signal.aborted?Error(what+' download stalled.'):e;}
+ finally{clearTimeout(timer);}
+}
+async function boothModel162(url){
+ for(let attempt=1;;attempt++){
+  try{return await expandShippedBooth162(await fetchBooth162(url,/\.opt\.glb\.gz$/.test(url)?'default':'no-cache','The published booth model'),url);}
+  catch(e){if(attempt===3||(e.status>=400&&e.status<500&&e.status!==408&&e.status!==429))throw e;await new Promise(r=>setTimeout(r,attempt*1500));}
+ }
+}
 async function loadShippedBoothsFromManifest(){
  try{
-  const res=await fetch('/api/manifest',{cache:'no-store'});
+  let res;
+  for(let attempt=1;;attempt++){
+   try{res=await fetch('/api/manifest',{cache:'no-store'});if(res.ok||res.status===404||attempt===3)break;}
+   catch(e){if(attempt===3)throw e;}
+   await new Promise(r=>setTimeout(r,attempt*1500));
+  }
   if(res.status===404)return;
   if(!res.ok)throw Error('Employer booth list could not load ('+res.status+').');
   const data=await res.json(),booths=(data.booths||[]).filter(b=>b.assetUrl);
   // Download a few booths ahead while earlier ones are placed, still placing
   // them in manifest order. Optimized booths have content-addressed URLs, so
   // the browser cache can serve them on a reload without asking the server.
-  const AHEAD=4,pending=[];
-  const download=b=>{const p=fetch(b.assetUrl,{cache:/\.opt\.glb\.gz$/.test(b.assetUrl)?'default':'no-cache'}).then(async r=>{if(!r.ok)throw Error('The published booth model could not load ('+r.status+').');return expandShippedBooth162(await r.arrayBuffer(),b.assetUrl);});p.catch(()=>{});return p;};
+  const AHEAD=4,pending=[];window.boothsLeftOut162=[];
+  const original=(b,e)=>{if(!b.fallbackUrl)throw e;console.warn('Optimized booth failed, using the original upload:',b.sector,b.slot_number,e);return boothModel162(b.fallbackUrl).then(model=>({model,url:b.fallbackUrl}));};
+  const download=b=>{const p=boothModel162(b.assetUrl).then(model=>({model,url:b.assetUrl}),e=>original(b,e));p.catch(()=>{});return p;};
   for(let i=0;i<Math.min(AHEAD,booths.length);i++)pending.push(download(booths[i]));
   for(let i=0;i<booths.length;i++){
    const b=booths[i];
    if(i+AHEAD<booths.length)pending.push(download(booths[i+AHEAD]));
    if(Loading155.blocked)Loading155.progress('booths',i/booths.length,'Loading employer booths ('+(i+1)+' of '+booths.length+')...');
    try{
-    const model=await pending[i];pending[i]=null;
     const id=(b.sector+'-'+b.slot_number).toLowerCase().replace(/[^a-z0-9_-]+/g,'-').slice(0,100);
-    await acceptShipment({id,model,name:b.booth_name,industry:b.sector,signature:b.booth_asset_key||''},false);
+    const place=model=>acceptShipment({id,model,name:b.booth_name,industry:b.sector,signature:b.booth_asset_key||''},false);
+    let got;try{got=await pending[i];}finally{pending[i]=null;}
+    try{await place(got.model);}catch(e){if(got.url===b.fallbackUrl)throw e;await place((await original(b,e)).model);}
     // Students never re-save, re-ship or move a booth. Geometry and textures
     // are already on the GPU and in collision, so release the source file and
     // CPU geometry copies (about 950 MB for a full venue).
     if(!employerModeParams()){const r=shippedBooths.get(id);if(r&&r.collisionKey){r.model=null;r.bin=null;r.j=null;r.parts=[];}}
-   }catch(e){if(Loading155.blocked)throw Error('Employer booth '+b.booth_name+': '+e.message);console.warn('Booth failed to load:',b.sector,b.slot_number,e);}
+   }catch(e){boothsLeftOut162.push({sector:b.sector,slot:b.slot_number,name:b.booth_name,error:e.message});console.warn('Booth left out of the venue:',b.sector,b.slot_number,b.booth_name,e);}
   }
  }catch(e){if(Loading155.blocked)throw e;console.warn('Manifest fetch failed:',e);}
  finally{boothLibrary162.clear();}
