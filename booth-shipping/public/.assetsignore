@@ -1,0 +1,4 @@
+# Over Cloudflare's 25 MB static-asset limit. Uploaded to R2 (static/<path>) by
+# scripts/upload-large-assets.cjs and served by src/index.js instead.
+city106/city.glb.gz
+mri42/doctor.glb

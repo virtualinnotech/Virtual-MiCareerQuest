@@ -56,6 +56,10 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
 .muted{color:#8a9aa8}
 .status{font-size:13px;color:#607380;margin:10px 0}
 .status.error{color:#ae1b2f;font-weight:650}
+.liveRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.badge.locked{background:#fde8eb;color:#ae1b2f}
+.badge.unlocked{background:#e7f4ea;color:#1e7a3c}
+#optProgress{width:100%;max-width:520px;height:10px;margin-top:12px;accent-color:#1e65ae}
 </style>
 </head>
 <body>
@@ -73,11 +77,26 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
  <h1>Booth admin</h1>
  <div style="margin-left:auto;display:flex;gap:8px">
   <button id="refreshBtn">Refresh</button>
-  <button id="lockBtn">Lock</button>
+  <button id="lockBtn">Sign out</button>
  </div>
 </header>
 <main>
  <div id="summary" class="summary"></div>
+
+ <div class="panel">
+  <h2>Booth editing</h2>
+  <p class="hint">Lock booth editing once every employer has finished, before students play. While locked, employers cannot ship, re-ship or claim a booth (they see a message to contact you), so nothing in the fair changes while students are in it. You can unlock at any time.</p>
+  <div class="liveRow"><span id="lockState" class="badge">Checking...</span><button id="lockToggle" disabled>Lock booth editing</button></div>
+  <div id="lockStatus" class="status"></div>
+ </div>
+
+ <div class="panel">
+  <h2>Optimize booths for students</h2>
+  <p class="hint">Makes the student download several times smaller, so the full fair loads quickly on school Wi-Fi and Chromebooks. Nothing students see changes: textures that many booths share are stored once, logos and photos are saved losslessly at the exact size the game shows them, and each booth is compressed. Employers' original uploads are kept: Undo switches students back to them instantly. Booth editing must be locked first. If you unlock and an employer re-ships, run it again. Keep this tab open while it runs (a few minutes for a full fair).</p>
+  <div class="liveRow"><span id="optState" class="muted"></span><button id="optBtn" class="primary" disabled>Optimize booths</button><button id="optUndo" disabled>Undo optimization</button></div>
+  <progress id="optProgress" hidden></progress>
+  <div id="optStatus" class="status"></div>
+ </div>
 
  <div class="panel">
   <h2>Sector capacity</h2>
@@ -102,10 +121,12 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
 </main>
 </div>
 
+<script src="/booth-optimizer162.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 let adminKey=sessionStorage.getItem('mcqAdminKey')||'';
 let allSlots=[];
+let boothsLocked=null,optimizing=false;
 
 function fmtDate(s){if(!s)return '';try{return new Date(s+'Z').toLocaleString();}catch(e){return s;}}
 
@@ -137,7 +158,7 @@ function renderSummary(slots){
 
 // Keep in sync with functions/api/admin/set-capacity.js's SECTOR_MAX_CAPACITY --
 // both are derived from the same layout generator venue-frame.html runs at boot.
-const SECTOR_MAX_CAPACITY={'Manufacturing':60,'Health Science':61,'Agribusiness':57,'Construction':55,'Information Technology':52};
+const SECTOR_MAX_CAPACITY={'Manufacturing':60,'Health Science':61,'Agribusiness':57,'Construction':55,'Information Technology':52,'Hospitality':25};
 
 function renderCapacity(){
  const bySector=new Map();
@@ -187,6 +208,7 @@ async function loadSlots(){
   renderSummary(allSlots);
   renderCapacity();
   renderRows();
+  renderOptimize();
   $('status').textContent='';
  }catch(e){$('status').textContent=e.message;$('status').classList.add('error');}
 }
@@ -221,8 +243,63 @@ $('capacityRows').addEventListener('click',async e=>{
  finally{e.target.disabled=false;}
 });
 
+function setStatus(id,text,error){$(id).textContent=text;$(id).classList.toggle('error',!!error);}
+function mb(bytes){return (bytes/1048576).toFixed(bytes<10485760?1:0)+' MB';}
+
+function renderLock(){
+ const known=boothsLocked!==null;
+ $('lockState').className='badge '+(boothsLocked?'locked':'unlocked');
+ $('lockState').textContent=!known?'Checking...':boothsLocked?'Locked: employers cannot change booths':'Open: employers can ship and edit';
+ $('lockToggle').textContent=boothsLocked?'Unlock booth editing':'Lock booth editing';
+ $('lockToggle').className=boothsLocked?'':'primary';
+ $('lockToggle').disabled=!known||optimizing;
+ renderOptimize();
+}
+async function loadLock(){
+ try{boothsLocked=(await api('/api/admin/booth-lock')).locked;setStatus('lockStatus','');}
+ catch(e){setStatus('lockStatus',e.message,true);}
+ renderLock();
+}
+$('lockToggle').onclick=async()=>{
+ const locking=!boothsLocked;
+ if(!confirm(locking?'Lock booth editing? Employers will not be able to ship, re-ship or claim booths until you unlock it.':'Unlock booth editing? Employers will be able to ship and change booths again, including while students are playing.'))return;
+ $('lockToggle').disabled=true;
+ try{boothsLocked=(await api('/api/admin/booth-lock',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({locked:locking})})).locked;setStatus('lockStatus',locking?'Booth editing is locked.':'Booth editing is open.');}
+ catch(e){setStatus('lockStatus',e.message,true);}
+ renderLock();
+};
+
+const isOptimized=s=>/\.opt\.glb\.gz$/.test(s.booth_asset_key||'');
+function renderOptimize(){
+ const shipped=allSlots.filter(s=>s.status==='shipped'&&s.booth_asset_key),done=shipped.filter(isOptimized).length;
+ if(!optimizing)$('optState').textContent=!shipped.length?'No shipped booths yet.':done===shipped.length?'All '+shipped.length+' shipped booths are optimized.':done?done+' of '+shipped.length+' shipped booths are optimized. Run it again to include the rest.':shipped.length+' shipped booths, not optimized yet.';
+ $('optBtn').disabled=optimizing||!boothsLocked||!shipped.length;
+ $('optBtn').title=boothsLocked?'':'Lock booth editing first';
+ $('optUndo').disabled=optimizing||!done;
+}
+$('optBtn').onclick=async()=>{
+ const booths=allSlots.filter(s=>s.status==='shipped'&&s.booth_asset_key);
+ optimizing=true;renderLock();
+ const bar=$('optProgress');bar.hidden=false;bar.max=booths.length;bar.value=0;
+ setStatus('optStatus','Starting...');
+ const leave=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);
+ try{
+  const r=await BoothOptimizer162.run({booths,adminKey,onProgress:p=>{bar.value=p.done;$('optState').textContent='Optimizing '+p.done+' of '+p.total+'...';setStatus('optStatus',p.label);}});
+  const after=r.optimizedBytes+r.libraryBytes;
+  setStatus('optStatus','Optimized '+r.optimized+' of '+r.booths+' booths. Student download: '+mb(r.originalBytes)+' before, '+mb(after)+' now ('+r.libraryFiles+' shared textures stored once).'+(r.failed.length?' Kept the original for: '+r.failed.join('; '):''),r.failed.length>0);
+ }catch(e){setStatus('optStatus',e.message+' Booths finished before this stay optimized; run it again to continue.',true);}
+ finally{window.removeEventListener('beforeunload',leave);optimizing=false;bar.hidden=true;await loadSlots();renderLock();}
+};
+$('optUndo').onclick=async()=>{
+ if(!confirm('Switch students back to every employer\'s original booth upload? You can optimize again later.'))return;
+ $('optUndo').disabled=true;
+ try{const r=await api('/api/admin/optimized-undo',{method:'POST'});setStatus('optStatus','Restored '+r.restored+' booths to their original uploads.');}
+ catch(e){setStatus('optStatus',e.message,true);}
+ await loadSlots();
+};
+
 $('search').addEventListener('input',renderRows);
-$('refreshBtn').onclick=loadSlots;
+$('refreshBtn').onclick=()=>{loadSlots();loadLock();};
 $('lockBtn').onclick=()=>{sessionStorage.removeItem('mcqAdminKey');adminKey='';showGate('');};
 
 $('unlockBtn').onclick=async()=>{
@@ -234,6 +311,7 @@ $('unlockBtn').onclick=async()=>{
   await api('/api/admin/list-booths');
   sessionStorage.setItem('mcqAdminKey',key);
   showApp();
+  loadLock();
   await loadSlots();
  }catch(e){
   if(e.message!=='Unauthorized')$('gateErr').textContent=e.message;
@@ -243,7 +321,7 @@ $('adminKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('unlockBtn').c
 
 (async()=>{
  if(adminKey){
-  try{await api('/api/admin/list-booths');showApp();await loadSlots();}
+  try{await api('/api/admin/list-booths');showApp();loadLock();await loadSlots();}
   catch(e){if(e.message!=='Unauthorized')showGate(e.message);}
  }
 })();

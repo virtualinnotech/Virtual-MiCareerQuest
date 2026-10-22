@@ -16,6 +16,7 @@ const SECTOR_COUNTS = {
   'Agribusiness': 30,
   'Construction': 30,
   'Information Technology': 20,
+  'Hospitality': 25,
 };
 
 const fs = require('fs');

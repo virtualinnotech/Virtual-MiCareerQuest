@@ -1,0 +1,25 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});try{
+ const p=await b.newPage({viewport:{width:1440,height:900}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.goto('http://127.0.0.1:8014/venue-frame.html?v=truck67&exhibit=truck');
+ await p.waitForFunction(()=>window.Farmstead65?.snapshot().ready,null,{timeout:120000});
+ await p.evaluate(()=>{document.getElementById('controlsPopup').classList.add('hidden');FarmTruck67.visit();});
+ await p.waitForFunction(()=>!document.getElementById('utvPrompt67').hidden);await p.screenshot({path:'../work/truck67-parked.png'});
+ await p.keyboard.press('t');await p.waitForFunction(()=>FarmTruck67.mounted&&FarmTruck67.snapshot().transition===0);
+ assert(await p.evaluate(()=>!FarmVehicles53.mounted&&!Farming36.mounted));
+ await p.keyboard.down('w');await p.waitForFunction(()=>FarmTruck67.snapshot().x>-19,null,{timeout:10000});await p.keyboard.up('w');
+ let s=await p.evaluate(()=>FarmTruck67.snapshot());assert(s.wheelRoll>3,'Wheels roll while driving');
+ await p.evaluate(()=>FarmTruck67.test.place(-34,39.5,Math.PI/2));await p.keyboard.down('w');await p.keyboard.down('a');await p.waitForTimeout(650);await p.keyboard.up('w');await p.keyboard.up('a');
+ const wheels=await p.evaluate(()=>{const v=FarmTruck67;return {s:v.snapshot(),parts:v.test.parts.map(p=>p.name),front:v.test.partMatrix(v.test.parts.find(p=>p.name.startsWith('Wheel_FL_'))),rear:v.test.partMatrix(v.test.parts.find(p=>p.name.startsWith('Wheel_RL_')))};});
+ assert(wheels.parts.filter(n=>n.startsWith('Wheel_')).length===4);assert(wheels.s.steering>.3);assert(Math.abs(wheels.s.yaw-Math.PI/2)>.03);assert.notDeepEqual(wheels.front,wheels.rear,'Front axle steers independently');
+ await p.keyboard.down(' ');await p.waitForTimeout(250);await p.keyboard.up(' ');await p.screenshot({path:'../work/truck67-driving.png'});
+ await p.evaluate(()=>FarmTruck67.test.place(-95,0,0));await p.keyboard.down('w');await p.waitForFunction(()=>FarmTruck67.snapshot().z>2,null,{timeout:10000});await p.keyboard.up('w');assert(await p.evaluate(()=>Drone44.snapshot().damaged>0));assert(await p.locator('#cropWarning67').isVisible());
+ await p.evaluate(()=>FarmTruck67.test.place(-9.8,45,Math.PI/2));await p.keyboard.down('w');await p.waitForTimeout(1200);await p.keyboard.up('w');s=await p.evaluate(()=>FarmTruck67.snapshot());assert(s.x<=-9.47,'Entire truck stays inside the farm');
+ await p.keyboard.press('t');await p.waitForFunction(()=>!FarmTruck67.mounted);assert(await p.evaluate(()=>colliders.some(c=>c.name==='Farm67 parked GMC')));
+ await p.evaluate(()=>{FarmTruck67.test.place(-22,43,Math.PI/2);FarmTruck67.visit();window.truckCamera67=updateCamera;updateCamera=()=>{camera=[-24,.35,42];target=[-22,.35,43];};});await p.waitForTimeout(250);await p.screenshot({path:'../work/truck67-low-ground.png'});
+ await p.setViewportSize({width:390,height:844});await p.evaluate(()=>{updateCamera=truckCamera67;FarmTruck67.visit();});await p.waitForTimeout(300);await p.screenshot({path:'../work/truck67-mobile.png'});
+ assert(await p.evaluate(()=>{render();const data=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,data);const colors=new Set();for(let i=0;i<data.length;i+=256)colors.add(data.slice(i,i+3).join());return colors.size>100;}));
+ await p.evaluate(()=>FarmTruck67.enter());await p.waitForFunction(()=>FarmTruck67.mounted);await p.evaluate(()=>FarmScene63.back());assert(await p.evaluate(()=>!FarmTruck67.mounted&&!FarmScene63.active&&colliders.every(c=>!c.name.startsWith('Farm67'))));
+ assert(await p.locator('#utvControls67').isHidden());assert(await p.locator('#cropWarning67').isHidden());
+ assert.deepEqual(errors,[]);console.log('PASS GMC boarding, driving, rolling and steering wheels, crop damage, farm boundary, exit, mobile, city return');
+}finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

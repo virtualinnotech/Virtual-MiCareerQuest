@@ -11,7 +11,7 @@ export async function onRequestGet(context) {
 
   const rows = await env.DB
     .prepare(
-      `SELECT sector, slot_number, status, company_name, email, claimed_at, shipped_at, booth_name
+      `SELECT sector, slot_number, status, company_name, email, claimed_at, shipped_at, booth_name, booth_asset_key
          FROM slots
         ORDER BY sector, slot_number`
     )

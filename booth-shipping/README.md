@@ -88,16 +88,26 @@ functions/api/admin/reset-slot.js   POST -- clear a slot back to open, delete it
 functions/api/admin/update-slot.js  POST -- fix a typo'd contact email on an existing slot
 functions/api/admin/set-capacity.js POST -- grow/shrink how many slots a sector has --
                                      see "Dynamic booth capacity" below
+functions/api/admin/booth-lock.js   GET/POST -- the "Booth editing" lock (R2 settings/booth-lock.json)
+functions/api/booth-editing.js      GET  -- public: {open} so a page can tell employers up front
+functions/api/admin/booth-file.js   GET  -- an original booth upload, straight from R2 (optimizer input)
+functions/api/admin/library.js      GET/POST -- shared texture library under booths/library/
+functions/api/admin/optimized-booth.js POST -- store a booth's student copy and point the slot at it
+functions/api/admin/optimized-undo.js  POST -- point every slot back at its original upload
 functions/booths/[[path]].js     GET  -- serves the uploaded GLBs from R2, edge-cached
 public/admin.html           the organizer's booth-management page -- see "Admin page" below
+public/booth-optimizer162.js the admin page's "Optimize booths for students" (runs in the browser)
 public/venue-preview.html   pre-manifest stand-in, superseded by the real venue.html --
                              unreferenced, kept around as a testing scrap
 ```
 
-There are exactly two real links given out: `/design.html` (employer
-studio) and `/venue.html` (student fair), plus `/admin.html` for the
-organizer only. `/` is not a third public page -- it 302s straight to
-`/venue.html`. It used to serve a standalone mock claim page from
+There are exactly two real links given out: `/vendor` (employer booth
+builder) and `/student` (student fair), plus `/admin.html` for the
+organizer only. They serve the same pages as `/design.html` and
+`/venue.html`, which keep working (the pages' own redirects use them).
+`/Student`, `/vendor/` and similar are redirected to the exact short path,
+because the pages load their assets by relative path. `/` is not a third
+public page -- it 302s straight to `/student`. It used to serve a standalone mock claim page from
 before the real studio existed; that page posted plain JSON to
 `/api/ship`, which has expected a real multipart GLB upload for a long
 time, so it was a dead, broken link and has been removed.
@@ -116,6 +126,28 @@ uploaded GLB/project files from R2 and frees the slot back to `open`,
 e.g. to let them start over, or to undo a mistaken/duplicate entry).
 It also has a **Sector capacity** panel -- see "Dynamic booth
 capacity" below.
+
+**Booth editing** (lock): once every employer has finished, lock it
+before students play. While locked, `/api/ship` and `/api/claim` answer
+423 with "Booth editing is closed..." (the studio shows that message), so
+nothing in the fair can change while students are in it. Unlock any time.
+The flag is one small R2 object, so it needs no database migration.
+(The header button that clears the admin key is labelled **Sign out**.)
+
+**Optimize booths for students** (needs booth editing locked): the
+browser downloads every shipped booth and posts back a student copy:
+textures used by two or more booths go to `booths/library/` once (the
+studio embeds the same material maps in every export), logos and photos
+are saved losslessly at the exact size the venue draws them, and the
+file is gzipped. The venue (`expandShippedBooth162` in venue-frame.html)
+rebuilds the full booth from that. Geometry is byte-identical and every
+texture draws pixel-identical; 150 test booths went from 722 MB to the
+size in CRASH-LAG-FIX-crash162.md. Student copies and library files are
+named by content hash, so they are cached for a year by the edge and by
+students' browsers. The employer's original upload is never touched:
+**Undo optimization** points every slot back at it instantly, and an
+employer re-shipping (after an unlock) does the same for their booth --
+run Optimize again before the fair.
 
 It's a plain static page (small enough to sit directly in `public/`,
 unlike `design.html`/`venue.html`) that calls the

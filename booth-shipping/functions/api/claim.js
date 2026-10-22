@@ -1,4 +1,4 @@
-import { json, badRequest, EMAIL_RE, claimOrRecognize } from '../_lib.js';
+import { json, badRequest, EMAIL_RE, claimOrRecognize, boothLock, BOOTH_LOCKED_MESSAGE } from '../_lib.js';
 
 // The "take a number" step. One link, everyone hits this same endpoint.
 // (The studio's "Ship to venue" button now does this itself in one call --
@@ -6,6 +6,7 @@ import { json, badRequest, EMAIL_RE, claimOrRecognize } from '../_lib.js';
 // for anyone testing the flow before opening the full 3D studio.)
 export async function onRequestPost(context) {
   const { request, env } = context;
+  if ((await boothLock(env)).locked) return badRequest(BOOTH_LOCKED_MESSAGE, 423);
 
   let body;
   try {

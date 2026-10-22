@@ -1,0 +1,22 @@
+[
+  {
+    "name": "bottle-fountain",
+    "archive": "drinking-fountain-with-bottle-filling-station.zip",
+    "size": [
+      0.23027102047531253,
+      0.524,
+      0.2856969775485441
+    ],
+    "triangles": 19999
+  },
+  {
+    "name": "fire-extinguisher",
+    "archive": "neglected-fire-extinguisher.zip",
+    "size": [
+      0.12118841723383819,
+      0.23499999999999996,
+      0.10599340262730572
+    ],
+    "triangles": 2532
+  }
+]

@@ -8,7 +8,11 @@ press T (or click the prompt) to enter. T exits when stopped and an exit is clea
 - E/Q: raise/lower forks. Space: brake. F: release a grounded pallet.
 - Touch buttons provide the same controls. Escape stops and exits.
 - Slide both lowered fork tips under the pallet and raise them to pick up.
-- Deliver inside the yellow outline, aligned with it, lower and release.
+- Deliver inside the yellow outline, aligned with it, stop and lower to complete automatically.
+- Delivery awards 100 points plus up to 50 careful-handling points (10 deducted per obstruction stop).
+- A flashing amber roof beacon and temporary roped practice area activate while mounted.
+- NPC navigation routes around the area; occupants are moved outside when entering. Exiting reopens it.
+- A persistent completion banner shows the result and offers another attempt.
 - Elapsed time and obstruction stops are tracked; Restart challenge resets them.
 
 The vehicle uses rear steering and distance-driven wheel rotation. Travel slows

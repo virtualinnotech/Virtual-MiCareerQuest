@@ -1,0 +1,36 @@
+{
+  "counts": {
+    "nodes": 17988,
+    "meshes": 8874,
+    "materials": 260,
+    "accessors": 20369,
+    "bufferViews": 20433,
+    "images": 64,
+    "textures": 64,
+    "samplers": 0
+  },
+  "binLength": 40118116,
+  "hiddenNoExtras": [],
+  "hiddenVisuals": 2052,
+  "newBatches": 204,
+  "newTriangles": 175406,
+  "sourceGeometrySHA256": "23436d8f4bf00e64866cd6b5ace76a84c3d5282709855dd18750374feea10bef",
+  "originalGeometryUnchanged": true,
+  "exhibitInteriorsUnchanged": true,
+  "version": 124,
+  "rightWing122": {
+    "bays": 3,
+    "checkInShift": -1.5,
+    "checkInWallX": 3.5
+  },
+  "volunteerSign124": {
+    "centerZ": 24.6,
+    "centerY": 2,
+    "width": 6.6,
+    "height": 1.5,
+    "logoWidth": 6,
+    "imageWidth": 904,
+    "imageHeight": 178,
+    "source": "header supplied PNG"
+  }
+}

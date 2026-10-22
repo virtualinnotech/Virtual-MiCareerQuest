@@ -1,0 +1,10 @@
+#rivian147{position:fixed;z-index:190;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:#142321ee;color:#f0f6ef;padding:10px 14px;border:1px solid #63796c;border-radius:8px;font:14px system-ui;box-shadow:0 4px 20px #0005}
+#rivian147[hidden],#rivianPrompt147[hidden]{display:none!important}
+#rivian147 strong{font-size:13px;white-space:nowrap;margin-right:12px}
+#rivian147 output{min-width:76px;font-variant-numeric:tabular-nums;font-size:18px}
+#rivian147 button{display:grid;place-items:center;width:42px;height:42px;padding:9px;border:1px solid #64766b;border-radius:5px;background:#20352e;color:#e6eee5;cursor:pointer}
+#rivian147 button:hover,#rivian147 button:focus-visible{background:#42604e;outline:2px solid #d4e5c7;outline-offset:2px}
+#rivian147 button[aria-pressed=true]{background:#d4e5c7;color:#17342c}
+#rivian147 svg{width:23px;height:23px}
+#rivianPrompt147{position:fixed;z-index:185;bottom:92px;left:50%;transform:translateX(-50%);background:#173c31;color:#fff;border:1px solid #a8c4a6;border-radius:6px;padding:12px 22px;font:600 16px system-ui;cursor:pointer}
+body.rivian147-driving #aim,body.rivian147-driving #cameraBtn,body.rivian147-driving #scooter100,body.rivian147-driving #staffPrompt,body.rivian147-driving #leftTools,body.rivian147-driving #rightTools,body.rivian147-driving #hubPrompt,body.rivian147-driving #sectorShortcuts,body.rivian147-driving #challengeHud41{display:none!important}

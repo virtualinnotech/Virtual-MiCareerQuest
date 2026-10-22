@@ -1,0 +1,11 @@
+{
+  "source": "User supplied dog.zip",
+  "bytes": 541792,
+  "triangles": 7286,
+  "bones": 43,
+  "clips": [
+    "walk",
+    "idle"
+  ],
+  "height": 0.34
+}

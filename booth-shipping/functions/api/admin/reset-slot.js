@@ -32,6 +32,13 @@ export async function onRequestPost(context) {
   const sectorSlug = slugify(sector);
   await env.BOOTHS.delete(`booths/${sectorSlug}/${slotNumber}.glb`).catch(() => {});
   await env.BOOTHS.delete(`booths/${sectorSlug}/${slotNumber}.project.json`).catch(() => {});
+  const optimized = await env.DB
+    .prepare('SELECT booth_asset_key FROM slots WHERE sector = ? AND slot_number = ?')
+    .bind(sector, slotNumber)
+    .first();
+  if (optimized?.booth_asset_key?.endsWith('.opt.glb.gz')) {
+    await env.BOOTHS.delete(optimized.booth_asset_key).catch(() => {});
+  }
 
   await env.DB
     .prepare(

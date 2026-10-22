@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),C=require('./core.js');
+const g=C.create(),s=g.state,wait=n=>{for(let i=0;i<n*60;i++)g.tick(1/60);},doAction=(id,food)=>{assert(g.act(id,food),id);wait((C.durations[id]||0)+.1);};
+assert(!g.act('serve'));assert(!g.act('egg'));assert(!g.act('rice'));assert(!g.act('chicken'));assert(!g.act('flame'));
+doAction('power');assert.equal(s.phase,'preheat');assert(!g.act('egg'));wait(11);assert.equal(s.phase,'egg');
+doAction('egg');wait(10);assert.equal(s.scramble,0,'waiting does not scramble food');
+for(let i=0;i<250;i++)g.tick(1/60,1);assert.equal(s.phase,'rice');assert(!g.act('egg'));
+doAction('rice');for(let i=0;i<370;i++)g.tick(1/60,1);assert.equal(s.phase,'proteins');
+doAction('steak');assert(!g.act('steak'));doAction('chicken');doAction('shrimp');assert.equal(s.phase,'cooking');
+assert(!g.act('serve'));doAction('flip','steak');assert.equal(s.foods.steak.flips,1);assert(!g.act('probe','missing'));
+assert(g.act('flame'));assert(!g.act('flame'),'flourish has cooldown');wait(2);assert.equal(s.flame,0);
+doAction('probe','chicken');assert(s.foods.chicken.checked);wait(35);assert.equal(s.phase,'serve');
+for(const [food,target]of Object.entries(C.targets))assert.equal(s.foods[food].temp,target);
+doAction('serve');assert.equal(s.phase,'complete');assert(s.served&&!s.power);assert(!g.act('serve'));assert(!g.act('power'));
+g.reset();assert.equal(s.phase,'off');assert.equal(s.egg,0);assert.equal(s.served,false);
+g.tick(NaN);g.tick(-1);assert.equal(s.elapsed,0);assert.equal(s.grill,70);
+console.log('PASS ordered cooking, interactive-only mixing, duplicate ingredients, temperature gates, flipping, probe, flame cooldown, serving, reset and invalid time');

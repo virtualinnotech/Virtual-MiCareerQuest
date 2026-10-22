@@ -1,0 +1,21 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:8014/venue-frame.html?challenge=drone&v=farm48');await page.waitForFunction(()=>Drone44.snapshot().ready,null,{timeout:120000});
+ await page.evaluate(()=>document.getElementById('controlsPopup').classList.add('hidden'));
+ assert.equal(await page.evaluate(()=>Drone44.snapshot().plants),88*68);
+ assert((await page.evaluate(()=>DroneCore44.sprinklers.map(s=>Math.min(...Drone44.test.plants.map(p=>Math.hypot(p.x-s.x,p.z-s.z)))))).every(d=>d<.46),'All fifteen former sprinkler clearings contain corn');
+ const hover=await page.evaluate(()=>({a:DroneDisplay47.poses(0),b:DroneDisplay47.poses(2)}));assert.equal(hover.a.length,7);for(let i=0;i<7;i++)assert.notEqual(hover.a[i].position[1],hover.b[i].position[1]);
+ assert((await page.evaluate(()=>FarmBoundary48.snapshot().trees))>40);
+ await page.screenshot({path:'../work/drone47-display.png'});
+ const pixels=await page.evaluate(()=>{const read=()=>{render();const p=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,p);return p;};const original=DroneDisplay47.draw,a=read();DroneDisplay47.draw=()=>{};const b=read();DroneDisplay47.draw=(m,t,s)=>original(m,t+2,s);const c=read();DroneDisplay47.draw=original;let geometry=0,motion=0;for(let i=0;i<a.length;i+=4){if(a[i]!==b[i]||a[i+1]!==b[i+1])geometry++;if(a[i]!==c[i]||a[i+1]!==c[i+1])motion++;}return{geometry,motion};});assert(pixels.geometry>500);assert(pixels.motion>20);
+ await page.setViewportSize({width:390,height:844});await page.waitForTimeout(300);await page.screenshot({path:'../work/drone47-mobile.png'});await page.setViewportSize({width:1440,height:1000});
+ await page.keyboard.press('t');await page.getByRole('button',{name:'Launch drone',exact:true}).click();
+ await page.evaluate(()=>{window.savedCamera48=updateCamera;updateCamera=()=>{camera=[-21,52,68];target=[-74,0,3];};updateCamera();});await page.waitForTimeout(300);await page.screenshot({path:'../work/farm48-overview.png'});
+ await page.evaluate(()=>{updateCamera=()=>{camera=[-25,6,39];target=[-36,1,29];};updateCamera();});await page.waitForTimeout(300);await page.screenshot({path:'../work/farm48-barn.png'});
+ await page.evaluate(()=>{updateCamera=()=>{camera=[-69,4,39];target=[-71,1,-15];};updateCamera();});await page.waitForTimeout(300);await page.screenshot({path:'../work/farm48-tracks.png'});
+ await page.evaluate(()=>{updateCamera=savedCamera48;Drone44.exit();MRI42.visit();});await page.waitForTimeout(300);await page.screenshot({path:'../work/mri47-corner.png'});
+ const driving=await page.evaluate(()=>{const F=Farming36,result={};for(const name of ['combine','tractor']){F.reset();F.visit(name);F.enter();const before={...F.test.vehicles[name]};F.test.controls.add('w');for(let i=0;i<180;i++)F.update(.016);F.test.controls.clear();const after=F.test.vehicles[name];result[name]=Math.hypot(after.x-before.x,after.z-before.z);F.exit();}F.reset();return result;});assert(driving.combine>2);assert(driving.tractor>2);
+ console.log('PASS barn/driveway clearance for both vehicles',driving);
+ assert.deepEqual(errors,[]);console.log('PASS 5984 corn plants, perimeter trees, seven independently hovering drones, desktop/mobile, rendered geometry/motion',pixels);
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

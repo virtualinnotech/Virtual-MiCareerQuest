@@ -1,4 +1,4 @@
-import { json, badRequest, EMAIL_RE, claimOrRecognize, slugify } from '../_lib.js';
+import { json, badRequest, EMAIL_RE, claimOrRecognize, slugify, boothLock, BOOTH_LOCKED_MESSAGE } from '../_lib.js';
 
 // Mirrors the 30MB ceiling already enforced client-side in the booth studio
 // (see makeShipmentPacket's exportGLB in studio-frame.html) -- that check
@@ -14,6 +14,7 @@ const MAX_BYTES = 30 * 1024 * 1024;
 // the whole flow.
 export async function onRequestPost(context) {
   const { request, env } = context;
+  if ((await boothLock(env)).locked) return badRequest(BOOTH_LOCKED_MESSAGE, 423);
 
   const contentType = request.headers.get('content-type') || '';
   if (!contentType.includes('multipart/form-data')) {

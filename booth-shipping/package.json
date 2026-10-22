@@ -14,8 +14,11 @@
     "sync:design-page:remote": "wrangler r2 object put micareerquest-booths/static/design.html --file=../MiCareerQuest-Ship-to-Venue-v13.html --remote",
     "sync:venue-page:local": "wrangler r2 object put micareerquest-booths/static/venue.html --file=../venue-frame.html --local",
     "sync:venue-page:remote": "wrangler r2 object put micareerquest-booths/static/venue.html --file=../venue-frame.html --remote",
-    "dev": "npm run sync:design-page:local && npm run sync:venue-page:local && wrangler dev",
-    "deploy": "npm run sync:design-page:remote && npm run sync:venue-page:remote && wrangler deploy"
+    "dev": "npm run sync:design-page:local && npm run sync:venue-page:local && npm run sync:large-assets:local && wrangler dev",
+    "deploy": "npm run sync:design-page:remote && wrangler deploy",
+    "sync:large-assets:local": "node scripts/upload-large-assets.cjs --local",
+    "sync:large-assets:remote": "node scripts/upload-large-assets.cjs --remote",
+    "postsync:design-page:remote": "npm run sync:venue-page:remote && npm run sync:large-assets:remote"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

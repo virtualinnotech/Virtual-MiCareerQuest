@@ -1,0 +1,51 @@
+[
+  {
+    "id": "modern",
+    "name": "Skyline135 modern",
+    "size": [
+      7.6,
+      14.870407802718026,
+      4.574269329771703
+    ],
+    "triangles": 288948,
+    "source": "modern_building_002.glb"
+  },
+  {
+    "id": "chase",
+    "name": "Skyline135 chase",
+    "size": [
+      6.2,
+      15.100665888849509,
+      7.095744156159995
+    ],
+    "triangles": 135486,
+    "source": "chase.glb"
+  },
+  {
+    "id": "skyscraper",
+    "name": "Skyline135 skyscraper",
+    "size": [
+      7,
+      29.259812572772287,
+      5.663790056927942
+    ],
+    "triangles": 223263,
+    "source": "skyscraper.glb",
+    "facade138": {
+      "panes": 5952,
+      "windows": 496,
+      "coreInset": 0.045
+    }
+  },
+  {
+    "id": "beveled",
+    "name": "Skyline135 beveled",
+    "size": [
+      4.1,
+      16.40000015477069,
+      4.100001694361368
+    ],
+    "triangles": 218,
+    "source": "beveled.glb"
+  }
+]

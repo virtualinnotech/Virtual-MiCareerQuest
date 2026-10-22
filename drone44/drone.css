@@ -1,0 +1,12 @@
+#dronePrompt44{position:fixed;bottom:145px;left:50%;transform:translateX(-50%);padding:12px 18px;border:1px solid #a4c985;border-radius:4px;background:#183d2f;color:white;z-index:45}
+#droneRepair56{position:fixed;bottom:190px;left:50%;transform:translateX(-50%);padding:12px 18px;max-width:calc(100vw - 24px);border:1px solid #a4c985;border-radius:4px;background:#183d2f;color:white;z-index:75}
+#utvBreakdown56{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:22px;background:#202b2af5;border:1px solid #dfad6c;border-radius:8px;color:white;z-index:90;font:15px/1.5 system-ui}
+#utvBreakdown56 h2{font-size:22px;margin-top:0}#utvBreakdown56 button{padding:10px 14px;background:#375646;color:white;border:1px solid #97b4a4;border-radius:4px}
+#droneRepair56[hidden],#utvBreakdown56[hidden],#droneControls44 button[hidden]{display:none}
+#dronePanel44{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:480px;max-width:calc(100vw - 32px);max-height:65dvh;overflow:auto;box-sizing:border-box;padding:24px;background:#172b26f5;color:#f2f7f5;border:1px solid #80a698;border-radius:8px;z-index:85;font:15px/1.5 system-ui}
+#dronePanel44 h2{font-size:23px;margin:0 0 12px}#dronePanel44 button{border:1px solid #8eb6a7;background:#315548;color:white;border-radius:4px;padding:10px 13px;margin:5px 5px 0 0;font:inherit;cursor:pointer}#dronePanel44 .drone-help{font-size:12px;color:#c5d8d1}
+#droneControls44{position:fixed;bottom:145px;left:50%;transform:translateX(-50%);display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);z-index:70;background:#172b26ef;padding:8px;border:1px solid #739385;border-radius:8px}
+#droneControls44 button{min-width:38px;height:38px;background:#315548;border:1px solid #739385;border-radius:4px;color:white;font:16px system-ui;touch-action:none;cursor:pointer}
+#droneMap44{position:fixed;right:14px;bottom:145px;width:112px;height:145px;border:1px solid #829c84;border-radius:4px;z-index:65}
+#dronePanel44[hidden],#dronePrompt44[hidden],#droneMap44[hidden],#droneControls44[hidden]{display:none}.drone44-active #cameraBtn,.drone44-active #aim{display:none!important}
+

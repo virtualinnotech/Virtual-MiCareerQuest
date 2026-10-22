@@ -5,5 +5,21 @@
 # Windows Explorer equivalent
 Thumbs.db
 
-# Copied from the canonical forklift34 assets by the Cloudflare sync scripts.
-booth-shipping/public/forklift34/
+# Everything else in booth-shipping/public is copied from the project by
+# booth-shipping/scripts/sync-forklift.cjs, which runs before every build and
+# deploy (wrangler.toml [build]), so only the hand-written files are committed.
+booth-shipping/public/*
+!booth-shipping/public/.assetsignore
+!booth-shipping/public/admin.html
+!booth-shipping/public/booth-optimizer162.js
+!booth-shipping/public/venue-preview.html
+!booth-shipping/public/robots20/
+!booth-shipping/public/students17/
+
+# The uncompressed city model is 167 MB, over GitHub's 100 MB file limit. The
+# game loads city.glb.gz, which is committed.
+city106/city.glb
+
+# Original user-supplied dog archives are kept on the Desktop, not shipped.
+city106/dogs112/source-dog/
+city106/dogs112/source-retriever/

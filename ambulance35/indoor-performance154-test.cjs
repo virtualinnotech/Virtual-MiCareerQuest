@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+let driving=false,updates=0,characterUpdates=0,draws=0,staffUpdates=0,drawn;
+const officer={kind:'trafficOfficer',clock:0},street={kind:'cityPedestrian'},indoor={kind:'boothStaff'},student={kind:'student'},prompt={hidden:false};
+const ctx={Driving154:{mounted:()=>driving},Crowd:{update:()=>updates++},AnimatedCharacters:{update:()=>characterUpdates++,draw:()=>draws++},CrowdGraphics:{draw:(a,s)=>{drawn=[...a,...s];return drawn;}},EventFlow22:{update:()=>staffUpdates++,officers:[officer]},characterState:{time:0},$:()=>prompt,window:{}};
+vm.runInNewContext(fs.readFileSync(__dirname+'/indoor-performance154.js','utf8'),ctx);
+driving=true;ctx.Crowd.update(.05);ctx.AnimatedCharacters.update(.05);ctx.AnimatedCharacters.draw();ctx.EventFlow22.update(.05);ctx.CrowdGraphics.draw([student,street,officer],[indoor]);
+assert.deepEqual(drawn,[street,officer]);assert.equal(updates+characterUpdates+draws+staffUpdates,0);assert.equal(officer.clock,.05);assert.equal(ctx.characterState.time,.05);assert(prompt.hidden);
+assert.equal(ctx.window.IndoorPerformance154.visible(indoor),false);assert.equal(ctx.window.IndoorPerformance154.visible(street),true);
+driving=false;ctx.Crowd.update(.05);ctx.AnimatedCharacters.update(.05);ctx.AnimatedCharacters.draw();ctx.EventFlow22.update(.05);ctx.CrowdGraphics.draw([student,street,officer],[indoor]);
+assert.equal(updates+characterUpdates+draws+staffUpdates,4);assert.deepEqual(drawn,[student,street,officer,indoor]);
+assert.equal(ctx.window.IndoorPerformance154.visible(indoor),true);
+console.log('PASS indoor simulation/draw suspension, outdoor preservation, and automatic restoration');

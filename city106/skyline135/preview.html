@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><script type="importmap">{"imports":{"three":"../../pc66/vendor/three/three.module.js"}}</script><style>body{margin:0}canvas{display:block}</style></head><body><script type="module">
+import * as T from 'three';
+import {GLTFLoader} from '../../pc66/vendor/three/addons/loaders/GLTFLoader.js';
+const scene=new T.Scene();scene.background=new T.Color('#bcc7cf');
+const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(36,innerWidth/innerHeight,.01,1000);scene.add(new T.HemisphereLight(0xe5f4ff,0x51523e,2));
+const sun=new T.DirectionalLight(0xffedd2,3);sun.position.set(4,9,5);scene.add(sun);
+const model=await new GLTFLoader().loadAsync('models.glb'),entries=[...model.scene.children];
+window.showAsset=(name,angle=0)=>{for(const n of entries)scene.remove(n);const n=entries.find(n=>n.name===name);scene.add(n);const b=new T.Box3().setFromObject(n),s=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),d=Math.max(s.x,s.y,s.z)*1.85;camera.position.copy(c).add(new T.Vector3(Math.sin(angle+.55)*d,d*.28,Math.cos(angle+.55)*d));camera.lookAt(c);renderer.render(scene,camera);};
+window.ready=true;showAsset(entries[0].name);
+</script></body></html>

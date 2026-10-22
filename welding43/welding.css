@@ -1,0 +1,11 @@
+#weldPrompt43{position:fixed;bottom:145px;left:50%;transform:translateX(-50%);padding:12px 18px;border:1px solid #f0c969;border-radius:4px;background:#24323a;color:white;z-index:45}
+#weldPanel43{position:fixed;bottom:145px;left:50%;transform:translateX(-50%);width:540px;max-width:calc(100vw - 24px);max-height:36dvh;overflow:auto;box-sizing:border-box;padding:12px 16px;background:#17252cef;border:1px solid #6b8791;border-radius:8px;z-index:80;color:#eff7f9;font:12px/1.4 system-ui,sans-serif}
+#weldPanel43 label{display:block;margin:6px 0}#weldPanel43 p{margin:6px 0}#weldPanel43 small{font-size:10px;color:#bbccd0}.weld-actions{display:flex;gap:6px;flex-wrap:wrap}#weldPanel43 button{background:#31454c;border:1px solid #819a9d;border-radius:4px;color:white;padding:7px 10px;cursor:pointer}#weldPanel43 button:hover{background:#49646d}
+#weldVisor43{position:fixed;inset:0;z-index:42;pointer-events:none;transform:translateY(calc((var(--helmet-drop,0) - 1)*105%));background:#101616e8;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,0 0,7% 20%,7% 77%,93% 77%,93% 20%,7% 20%)}
+#weldVisor43 .weld-lens{position:absolute;inset:20% 7% 23%;border:8px solid #1b2526;border-radius:8px;background:#42634b20}
+#weldVisor43[hidden],#weldPanel43[hidden],#weldPrompt43[hidden]{display:none}.welding43-active #aim,.welding43-active #cameraBtn{display:none!important}
+
+#weldWarning43{position:fixed;inset:0;z-index:1000;background:rgba(255,255,255,.94);display:grid;place-items:center;padding:20px;box-sizing:border-box}
+body.welding43-active canvas{cursor:none!important}
+#weldWarning43[hidden]{display:none}#weldWarning43 section{max-width:460px;background:#fff;color:#182228;border:2px solid #b44a25;border-radius:8px;padding:24px;box-shadow:0 12px 50px #0003;font:16px/1.5 system-ui}#weldWarning43 h2{font-size:24px;margin:0 0 12px}#weldWarning43 button{background:#243f46;color:white;border:0;border-radius:4px;padding:12px;font:inherit;cursor:pointer}
+@media(prefers-reduced-motion:reduce){#weldWarning43{background:#dfe6e9}}

@@ -6,6 +6,11 @@ compatibility_date = "2024-09-23"
 directory = "public"
 binding = "ASSETS"
 
+# The game files in public/ are copied from the project, not committed (see
+# ../.gitignore), so copy them before every deploy and dev run.
+[build]
+command = "node scripts/sync-forklift.cjs"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "micareerquest-slots"

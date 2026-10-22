@@ -1,0 +1,36 @@
+body.racing{display:block;background:#17222b}
+body.racing>header,body.racing>nav,body.racing>footer,body.racing aside{display:none}
+body.racing main{display:block;height:100dvh}
+body.racing #workspace{position:fixed;inset:0;z-index:100;height:100dvh}
+body.racing #viewport,body.racing #targets,body.racing .view-tools,body.racing #part-name,body.racing #boot-screen{display:none}
+#race{background:#718493;touch-action:none}
+#race-controls{inset:0;display:block;pointer-events:none;color:#fff;font-family:Arial,Helvetica,sans-serif;text-shadow:0 2px 8px #09131d88}
+#race-controls button{pointer-events:auto;color:white;border:1px solid #ffffff55;background:#142a3e99;backdrop-filter:blur(12px);box-shadow:inset 0 1px #ffffff33,0 4px 15px #0003;width:48px;height:48px;min-height:48px;padding:12px;border-radius:5px}
+#race-controls button:hover{background:#31566fdd}
+#race-controls button img{filter:invert(1);width:22px;height:22px}
+.race-top{position:absolute;top:30px;left:32px;right:32px;display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.race-brand{display:flex;flex-direction:column;gap:6px}
+.race-brand small{color:#b8f5f3;font-size:12px}.race-brand strong{font-size:21px;font-style:italic}
+.race-distance{display:grid;gap:10px;text-align:center;font-size:11px;padding-top:5px;width:180px}.race-distance progress{width:100%;height:3px;accent-color:#68eddf;border:0}
+.race-tools{display:flex;gap:8px}
+.race-start{position:absolute;left:50%;bottom:23%;transform:translateX(-50%);display:grid;justify-items:center;gap:18px;width:min(90%,440px)}
+.race-loading{font-size:14px;background:#102331cc;padding:14px 20px;border-radius:4px;text-align:center}
+#race-controls .race-ready{width:232px;height:72px;font-size:30px;font-weight:800;font-style:italic;border:1px solid #c1fbff;color:#153448;text-shadow:0 1px #fff;background:linear-gradient(175deg,#f5ffff 0%,#c2f1fc 42%,#79c8e2 44%,#e1faff 100%);box-shadow:inset 0 2px 1px white,inset 0 -5px 0 #4a839f,0 6px 0 #1d3f57,0 14px 35px #0c1f3099;transition:transform .16s,filter .16s}
+#race-controls .race-ready:hover{filter:brightness(1.13);transform:translateY(-2px)}
+#race-controls .race-ready:active{transform:translateY(3px)}
+.race-signal{position:absolute;top:20%;left:50%;transform:translateX(-50%);text-align:center}
+.signal-lights{display:flex;gap:16px;padding:18px 24px;border-radius:8px;border:2px solid #465564;background:linear-gradient(#273642,#0d1721);box-shadow:0 8px 28px #0007,inset 0 1px 2px #ffffff55}
+.signal-lights i{display:block;width:48px;height:48px;border-radius:50%;background:#14202a;border:4px solid #070f17;box-shadow:inset 0 3px 6px #000}
+.brake-square{display:block;width:16px;height:16px;margin:3px;background:currentColor}
+.race-signal[data-light="0"] i:nth-child(1){background:#ff4b40;box-shadow:0 0 28px #f64936,inset 0 4px 7px #ffb4a9}
+.race-signal[data-light="1"] i:nth-child(2){background:#ffc448;box-shadow:0 0 28px #ffb025,inset 0 4px 7px #fff0c1}
+.race-signal[data-light="2"] i:nth-child(3){background:#4effaa;box-shadow:0 0 28px #3aff9b,inset 0 4px 7px #dcffef}
+
+.race-bottom{position:absolute;bottom:28px;left:32px;right:32px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.race-position strong{font-size:48px;font-style:italic}.race-position span{font-size:19px;color:#d4e5ea;margin-left:6px}.race-position small{display:block;color:#dfedf0;font-size:10px;margin-top:2px}
+.race-speed{display:grid;grid-template-columns:auto auto;align-items:baseline;gap:4px 8px;text-align:right;font-variant-numeric:tabular-nums}.race-speed strong{font-size:64px;font-weight:400;font-style:italic;line-height:1}.race-speed span{font-size:10px}.race-speed small{grid-column:1/-1;color:#e0eeee;font-size:14px}
+.race-touch{display:flex;gap:9px}
+.race-result{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(440px,calc(100% - 32px));padding:30px;border:1px solid #d6f2fc66;border-radius:8px;text-align:center;background:#102535e8;backdrop-filter:blur(18px);box-shadow:0 15px 60px #0006}
+.race-result small{color:#86e4de}.race-result h2{font-size:30px}.race-result p{font-size:18px;font-variant-numeric:tabular-nums;margin:18px 0 24px}.race-result>div{display:flex;justify-content:center;gap:12px}
+#race-controls .race-result button{width:auto;height:46px;white-space:nowrap;font-size:14px}
+

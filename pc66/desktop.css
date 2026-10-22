@@ -1,0 +1,21 @@
+body.desk-mode #build-list{display:none}
+body.desk-mode main{grid-template-columns:250px minmax(0,1fr)}
+body.desk-mode .view-tools label,body.desk-mode #rotate,body.desk-mode #part-name{display:none}
+body.monitor-race #race{display:block;position:fixed;left:-2000px;top:0;width:1024px;height:576px;pointer-events:none}
+body.monitor-race #race-controls{inset:auto 12px 12px;display:flex;justify-content:center;pointer-events:none}
+body.monitor-race #race-controls .race-top,body.monitor-race #race-controls .race-start,body.monitor-race #race-controls .race-signal,body.monitor-race #race-controls .race-result,body.monitor-race #race-controls .race-position,body.monitor-race #race-controls .race-speed{display:none}
+body.monitor-race #race-controls .race-bottom{position:static;display:block}
+body.monitor-race #race-controls .race-touch{display:flex;margin:0;justify-content:center}
+body.monitor-race #race-controls .race-touch button{pointer-events:auto}
+
+body.monitor-race .monitor-command{pointer-events:auto!important}
+body.monitor-race #race-controls [data-key=turbo][aria-pressed=true]{background:#167c91;border-color:#6df4ff;box-shadow:0 0 16px #43e3f588}
+.target[data-target=power]{width:36px;height:36px;border-color:#4addb0;box-shadow:0 0 0 7px #4addb033,0 0 20px #4addb077}
+
+
+#display-build{position:absolute;bottom:24px;right:24px;z-index:12;display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 22px;color:#073b3c;background:#c6fff0;border:2px solid #52d7c4;border-radius:6px;font-weight:750;font-size:16px;box-shadow:0 0 24px #5fe5cf55,0 6px 18px #0005;cursor:pointer}
+#display-build img{width:24px;height:24px}
+#display-build:hover{background:#ebfff9;box-shadow:0 0 28px #5fe5cf88,0 6px 18px #0005}
+#display-build:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#display-build[hidden]{display:none}
+

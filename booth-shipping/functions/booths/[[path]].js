@@ -26,7 +26,11 @@ export async function onRequestGet(context) {
   if (key.endsWith('.glb')) headers.set('content-type', 'model/gltf-binary');
   else if (key.endsWith('.json')) headers.set('content-type', 'application/json');
   headers.set('etag', object.httpEtag);
-  headers.set('Cache-Control', 'public, max-age=300');
+  // Optimized booths and library textures are named by their content
+  // (see api/admin/optimized-booth.js and library.js), so they never change
+  // and students' browsers can keep them across reloads.
+  const immutable = key.startsWith('booths/library/') || key.endsWith('.opt.glb.gz');
+  headers.set('Cache-Control', immutable ? 'public, max-age=31536000, immutable' : 'public, max-age=300');
 
   const response = new Response(object.body, { headers });
   // The Cache API only accepts GET requests as cache keys -- a HEAD hitting

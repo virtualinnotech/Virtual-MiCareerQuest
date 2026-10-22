@@ -1,0 +1,58 @@
+{
+  "student2": {
+    "sourceRigPreserved": true,
+    "bones": 65,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "green": {
+    "sourceRigPreserved": true,
+    "bones": 65,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "casual": {
+    "sourceRigPreserved": false,
+    "bones": 20,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "stride-a": {
+    "sourceRigPreserved": false,
+    "bones": 20,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "stride-b": {
+    "sourceRigPreserved": false,
+    "bones": 20,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "smiling": {
+    "sourceRigPreserved": false,
+    "bones": 20,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  },
+  "teenage": {
+    "sourceRigPreserved": false,
+    "bones": 20,
+    "clips": [
+      "Walk",
+      "Idle"
+    ]
+  }
+}

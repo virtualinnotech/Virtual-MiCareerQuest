@@ -1,0 +1,34 @@
+[
+  {
+    "name": "ParkBenchLong",
+    "triangles": 2950
+  },
+  {
+    "name": "ParkBenchShort",
+    "triangles": 1810
+  },
+  {
+    "name": "TrashCanCap",
+    "triangles": 1646
+  },
+  {
+    "name": "PostBox",
+    "triangles": 1829
+  },
+  {
+    "name": "FireHydrant",
+    "triangles": 1849
+  },
+  {
+    "name": "ParkingMeter",
+    "triangles": 1156
+  },
+  {
+    "name": "Dumpster",
+    "triangles": 2743
+  },
+  {
+    "name": "Utility",
+    "triangles": 1169
+  }
+]

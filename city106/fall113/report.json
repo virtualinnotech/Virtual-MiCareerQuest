@@ -1,0 +1,25 @@
+{
+  "source": "User supplied fall-maple-trees-geometry-nodes.zip",
+  "bytes": 1068056,
+  "trees": [
+    {
+      "source": "TREE_10_Exported001",
+      "originalTriangles": 117120,
+      "triangles": 2880
+    },
+    {
+      "source": "TREE_9_Live002",
+      "originalTriangles": 182008,
+      "triangles": 2880
+    },
+    {
+      "source": "TREE_8_Export001",
+      "originalTriangles": 442440,
+      "triangles": 2889
+    }
+  ],
+  "textures": [
+    512,
+    1024
+  ]
+}

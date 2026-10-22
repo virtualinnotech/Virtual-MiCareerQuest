@@ -14,6 +14,7 @@ const SECTOR_MAX_CAPACITY = {
   Agribusiness: 57,
   Construction: 55,
   'Information Technology': 52,
+  'Hospitality': 25,
 };
 
 // Grows or shrinks how many slots a sector has. Growing inserts new 'open'

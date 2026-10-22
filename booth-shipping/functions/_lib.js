@@ -58,3 +58,22 @@ export async function claimOrRecognize(db, { sector, email, companyName }) {
   if (!claimed) return null; // sector full
   return { ...claimed, returning: false };
 }
+
+// The organizer's "Booth editing" switch on the admin page. Once every
+// employer has finished, it is locked so no booth can change while students
+// play. Kept as one small R2 object rather than a D1 column so turning it on
+// needs no database migration (db:apply re-seeds and would wipe slots).
+export const BOOTH_LOCK_KEY = 'settings/booth-lock.json';
+export const BOOTH_LOCKED_MESSAGE =
+  'Booth editing is closed because the career fair is live for students. Contact the organizer if something on your booth must change.';
+
+export async function boothLock(env) {
+  const object = await env.BOOTHS.get(BOOTH_LOCK_KEY);
+  if (!object) return { locked: false, changedAt: null };
+  try {
+    const saved = await object.json();
+    return { locked: saved.locked === true, changedAt: saved.changedAt || null };
+  } catch {
+    return { locked: false, changedAt: null };
+  }
+}

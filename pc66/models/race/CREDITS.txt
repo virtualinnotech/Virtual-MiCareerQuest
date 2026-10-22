@@ -1,0 +1,16 @@
+Ferrari 458 Italia model: vicent091036.
+Original: https://sketchfab.com/models/57bf6cc56931426e87494f554df1dab6
+Distribution: https://github.com/mrdoob/three.js/blob/r180/examples/models/gltf/ferrari.glb
+Used by the official Three.js car materials example with the above attribution.
+Changes in this project: blue/orange/ivory paint, window and light materials, animated wheels.
+
+Venice Sunset HDRI: Greg Zaal / Poly Haven, CC0.
+https://polyhaven.com/a/venice_sunset
+https://polyhaven.com/license
+
+Three.js rendering helpers and Draco decoder: Three.js r180 examples.
+Three.js MIT license: ../../vendor/three/LICENSE
+Draco: Google, Apache 2.0. https://github.com/google/draco/blob/main/LICENSE
+
+Street geometry, building textures, pavement, signs and race layout created for this project.
+This is a simulated race, not a hardware benchmark. Brands do not imply endorsement.

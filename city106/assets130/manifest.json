@@ -1,0 +1,202 @@
+[
+  {
+    "name": "bench-metro",
+    "archive": "metro-bench-model.zip",
+    "size": [
+      1.08,
+      0.3689340307455751,
+      0.2834832657402708
+    ],
+    "triangles": 5156
+  },
+  {
+    "name": "bench-soviet",
+    "archive": "soviet-bench-2.zip",
+    "size": [
+      1.08,
+      0.3896020714371145,
+      0.384416040690371
+    ],
+    "triangles": 9908
+  },
+  {
+    "name": "bench-002",
+    "archive": "bench-002.zip",
+    "size": [
+      0.94,
+      0.36337313432835816,
+      0.27739019189765457
+    ],
+    "triangles": 428
+  },
+  {
+    "name": "polara",
+    "archive": "polara-crosswalk-with-scanned-texture.zip",
+    "size": [
+      0.05677744041838973,
+      0.19,
+      0.08555737522894719
+    ],
+    "triangles": 4490
+  },
+  {
+    "name": "signal-american",
+    "archive": "traffic-light.zip",
+    "size": [
+      2.6337926280400583,
+      3.25,
+      0.28740894290701113
+    ],
+    "triangles": 5302
+  },
+  {
+    "name": "signal-sinowatcher",
+    "archive": "sinowatcher-malaysia-traffic-signal-set-2.zip",
+    "size": [
+      1.8250604115577749,
+      3.25,
+      0.4838712346932168
+    ],
+    "triangles": 6861
+  },
+  {
+    "name": "flowers",
+    "archive": "flower-stand-filled.zip",
+    "size": [
+      1.05,
+      0.5421542940428261,
+      0.6152359931044695
+    ],
+    "triangles": 7661
+  },
+  {
+    "name": "grass-tuft",
+    "archive": "grass.zip",
+    "size": [
+      0.18723618159156583,
+      0.16,
+      0.20318739480859252
+    ],
+    "triangles": 6690
+  },
+  {
+    "name": "grass-small",
+    "archive": "grass.zip",
+    "size": [
+      0.10118907764160076,
+      0.075,
+      0.11125205600115744
+    ],
+    "triangles": 4178
+  },
+  {
+    "name": "dumpster",
+    "archive": "street-and-city-props-dumpster-traffic-light.zip",
+    "size": [
+      0.7554816589592788,
+      0.48,
+      0.3533024337166131
+    ],
+    "triangles": 1786
+  },
+  {
+    "name": "street-bin",
+    "archive": "street-and-city-props-dumpster-traffic-light.zip",
+    "size": [
+      0.30435344086923993,
+      0.44,
+      0.3043535696849973
+    ],
+    "triangles": 388
+  },
+  {
+    "name": "street-signal",
+    "archive": "street-and-city-props-dumpster-traffic-light.zip",
+    "size": [
+      0.3116749384436453,
+      1.44,
+      0.15542473630881454
+    ],
+    "triangles": 470
+  },
+  {
+    "name": "waste-station",
+    "archive": "waste-bins.zip",
+    "size": [
+      0.6936800074577332,
+      0.46,
+      0.23
+    ],
+    "triangles": 1452
+  },
+  {
+    "name": "wood-bin",
+    "archive": "waste-bins.zip",
+    "size": [
+      0.27701600909233093,
+      0.44,
+      0.27701600909233093
+    ],
+    "triangles": 1716
+  },
+  {
+    "name": "recycle-blue",
+    "archive": "trash-can-recycle-bin-16mb-4part.zip",
+    "size": [
+      0.24337266035586966,
+      0.47,
+      0.2432161414020197
+    ],
+    "triangles": 3622
+  },
+  {
+    "name": "recycle-green",
+    "archive": "trash-can-recycle-bin-16mb-4part.zip",
+    "size": [
+      0.2433726393846157,
+      0.47,
+      0.2432161414020197
+    ],
+    "triangles": 3622
+  },
+  {
+    "name": "waste-grey",
+    "archive": "trash-can-recycle-bin-16mb-4part.zip",
+    "size": [
+      0.24337270229837754,
+      0.47,
+      0.2432161414020197
+    ],
+    "triangles": 3622
+  },
+  {
+    "name": "school-bus",
+    "archive": "school-bus-conversion.zip",
+    "size": [
+      1.2197916290816775,
+      1.332052150579853,
+      4.5
+    ],
+    "triangles": 159064
+  },
+  {
+    "name": "city-bus",
+    "archive": "city-bus-rigged-5236.zip",
+    "size": [
+      1.2239220593799198,
+      1.2082236400281894,
+      4.9
+    ],
+    "triangles": 5562
+  },
+  {
+    "name": "sidewalk-module",
+    "archive": "sidewalks.zip",
+    "size": [
+      2.4,
+      0.05129664513248853,
+      2.0261597324289524
+    ],
+    "triangles": 30
+  }
+]

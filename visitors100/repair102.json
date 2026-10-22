@@ -1,0 +1,181 @@
+{
+  "student2": {
+    "riggedSource": true,
+    "meshes": [
+      {
+        "name": "node_id40",
+        "boundaryBefore": 80,
+        "boundaryAfterWeld": 80,
+        "triangles": 3000
+      },
+      {
+        "name": "node_id44",
+        "boundaryBefore": 80,
+        "boundaryAfterWeld": 80,
+        "triangles": 3000
+      },
+      {
+        "name": "node_id52",
+        "boundaryBefore": 4256,
+        "boundaryAfterWeld": 687,
+        "triangles": 13329
+      },
+      {
+        "name": "node_id56",
+        "boundaryBefore": 924,
+        "boundaryAfterWeld": 56,
+        "triangles": 1720
+      },
+      {
+        "name": "node_id60",
+        "boundaryBefore": 26797,
+        "boundaryAfterWeld": 5530,
+        "triangles": 9205
+      },
+      {
+        "name": "node_id64",
+        "boundaryBefore": 1173,
+        "boundaryAfterWeld": 324,
+        "triangles": 11862
+      },
+      {
+        "name": "node_id68",
+        "boundaryBefore": 4042,
+        "boundaryAfterWeld": 810,
+        "triangles": 17061
+      },
+      {
+        "name": "node_id72",
+        "boundaryBefore": 1876,
+        "boundaryAfterWeld": 48,
+        "triangles": 15962
+      },
+      {
+        "name": "node_id76",
+        "boundaryBefore": 1480,
+        "boundaryAfterWeld": 254,
+        "triangles": 8848
+      },
+      {
+        "name": "node_id80",
+        "boundaryBefore": 32617,
+        "boundaryAfterWeld": 28757,
+        "triangles": 58383
+      }
+    ]
+  },
+  "green": {
+    "riggedSource": true,
+    "meshes": [
+      {
+        "name": "Wolf3D_Teeth",
+        "boundaryBefore": 60,
+        "boundaryAfterWeld": 48,
+        "triangles": 100
+      },
+      {
+        "name": "Wolf3D_Outfit_Bottom",
+        "boundaryBefore": 288,
+        "boundaryAfterWeld": 0,
+        "triangles": 1196
+      },
+      {
+        "name": "Wolf3D_Outfit_Top",
+        "boundaryBefore": 1006,
+        "boundaryAfterWeld": 0,
+        "triangles": 3126
+      },
+      {
+        "name": "EyeRight",
+        "boundaryBefore": 32,
+        "boundaryAfterWeld": 0,
+        "triangles": 206
+      },
+      {
+        "name": "Wolf3D_Head",
+        "boundaryBefore": 226,
+        "boundaryAfterWeld": 24,
+        "triangles": 4094
+      },
+      {
+        "name": "Wolf3D_Hair",
+        "boundaryBefore": 84,
+        "boundaryAfterWeld": 0,
+        "triangles": 948
+      },
+      {
+        "name": "EyeLeft",
+        "boundaryBefore": 32,
+        "boundaryAfterWeld": 0,
+        "triangles": 206
+      },
+      {
+        "name": "Wolf3D_Body",
+        "boundaryBefore": 454,
+        "boundaryAfterWeld": 62,
+        "triangles": 1542
+      },
+      {
+        "name": "Wolf3D_Outfit_Footwear",
+        "boundaryBefore": 192,
+        "boundaryAfterWeld": 36,
+        "triangles": 1288
+      }
+    ]
+  },
+  "casual": {
+    "riggedSource": false,
+    "meshes": [
+      {
+        "name": "mesh_0",
+        "boundaryBefore": 49194,
+        "boundaryAfterWeld": 0,
+        "triangles": 65000
+      }
+    ]
+  },
+  "stride-a": {
+    "riggedSource": false,
+    "meshes": [
+      {
+        "name": "mesh_0",
+        "boundaryBefore": 40050,
+        "boundaryAfterWeld": 10,
+        "triangles": 65000
+      }
+    ]
+  },
+  "stride-b": {
+    "riggedSource": false,
+    "meshes": [
+      {
+        "name": "mesh_0",
+        "boundaryBefore": 84530,
+        "boundaryAfterWeld": 157,
+        "triangles": 64999
+      }
+    ]
+  },
+  "smiling": {
+    "riggedSource": false,
+    "meshes": [
+      {
+        "name": "mesh_0",
+        "boundaryBefore": 67026,
+        "boundaryAfterWeld": 84,
+        "triangles": 65000
+      }
+    ]
+  },
+  "teenage": {
+    "riggedSource": false,
+    "meshes": [
+      {
+        "name": "mesh_0",
+        "boundaryBefore": 64541,
+        "boundaryAfterWeld": 116,
+        "triangles": 65000
+      }
+    ]
+  }
+}
