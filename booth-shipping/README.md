@@ -49,7 +49,8 @@ the static asset binding for everything else -- see "Files" below.
 - **No-shows get a placeholder, on your schedule.** `functions/api/admin/fill-demo.js`
   is a manual action (call it with the admin key whenever you decide
   design season is over) that converts any still-`open` slots to a
-  generic "demo booth" so no sector has a gap on fair day.
+  generic "demo booth" so no sector has a gap on fair day. The admin
+  page's **Demo** column drives it (see "Admin page" below).
 
 ## Still ahead
 
@@ -82,7 +83,8 @@ functions/api/claim.js           POST -- standalone claim (testing / a "check sp
 functions/api/lookup.js          GET  -- "welcome back" check by email
 functions/api/ship.js            POST -- claim-if-needed + upload the real GLB (multipart)
 functions/api/manifest.js        GET  -- what the student game reads, edge-cached
-functions/api/admin/fill-demo.js    POST -- fill remaining open slots with placeholders
+functions/api/admin/fill-demo.js    POST -- {on} fill every open slot with a demo booth, or remove them all
+functions/api/admin/demo-slot.js    POST -- {sector, slotNumber, on} one slot's demo booth on/off
 functions/api/admin/list-booths.js  GET  -- every slot (incl. email), for the admin page
 functions/api/admin/reset-slot.js   POST -- clear a slot back to open, delete its R2 files
 functions/api/admin/update-slot.js  POST -- fix a typo'd contact email on an existing slot
@@ -126,6 +128,16 @@ uploaded GLB/project files from R2 and frees the slot back to `open`,
 e.g. to let them start over, or to undo a mistaken/duplicate entry).
 It also has a **Sector capacity** panel -- see "Dynamic booth
 capacity" below.
+
+**Demo** column: a switch on every empty slot puts a demo booth there
+(switch it off to empty the slot again); the **Fill** switch above the
+column header puts one in every empty slot, and off removes them all.
+Employer slots have no switch, and the server refuses a demo booth in
+one. Demo booths are 30 real booth-editor designs (5 per sector, from
+`demo-booths/generate.cjs`), shipped with the site as static files under
+`/demo-booths/`, so they need no R2 uploads and download once per design
+however many slots use them. Use them to run the full venue before the
+employers ship, then turn Fill off.
 
 **Booth editing** (lock): once every employer has finished, lock it
 before students play. While locked, `/api/ship` and `/api/claim` answer

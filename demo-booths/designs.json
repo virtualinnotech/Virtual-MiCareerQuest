@@ -1,0 +1,182 @@
+[
+ {
+  "sector": "Manufacturing",
+  "design": 1,
+  "name": "Manufacturing Demo 1",
+  "file": "models/manufacturing-1.glb.gz"
+ },
+ {
+  "sector": "Manufacturing",
+  "design": 2,
+  "name": "Manufacturing Demo 2",
+  "file": "models/manufacturing-2.glb.gz"
+ },
+ {
+  "sector": "Manufacturing",
+  "design": 3,
+  "name": "Manufacturing Demo 3",
+  "file": "models/manufacturing-3.glb.gz"
+ },
+ {
+  "sector": "Manufacturing",
+  "design": 4,
+  "name": "Manufacturing Demo 4",
+  "file": "models/manufacturing-4.glb.gz"
+ },
+ {
+  "sector": "Manufacturing",
+  "design": 5,
+  "name": "Manufacturing Demo 5",
+  "file": "models/manufacturing-5.glb.gz"
+ },
+ {
+  "sector": "Health Science",
+  "design": 1,
+  "name": "Health Science Demo 1",
+  "file": "models/health-science-1.glb.gz"
+ },
+ {
+  "sector": "Health Science",
+  "design": 2,
+  "name": "Health Science Demo 2",
+  "file": "models/health-science-2.glb.gz"
+ },
+ {
+  "sector": "Health Science",
+  "design": 3,
+  "name": "Health Science Demo 3",
+  "file": "models/health-science-3.glb.gz"
+ },
+ {
+  "sector": "Health Science",
+  "design": 4,
+  "name": "Health Science Demo 4",
+  "file": "models/health-science-4.glb.gz"
+ },
+ {
+  "sector": "Health Science",
+  "design": 5,
+  "name": "Health Science Demo 5",
+  "file": "models/health-science-5.glb.gz"
+ },
+ {
+  "sector": "Agribusiness",
+  "design": 1,
+  "name": "Agribusiness Demo 1",
+  "file": "models/agribusiness-1.glb.gz"
+ },
+ {
+  "sector": "Agribusiness",
+  "design": 2,
+  "name": "Agribusiness Demo 2",
+  "file": "models/agribusiness-2.glb.gz"
+ },
+ {
+  "sector": "Agribusiness",
+  "design": 3,
+  "name": "Agribusiness Demo 3",
+  "file": "models/agribusiness-3.glb.gz"
+ },
+ {
+  "sector": "Agribusiness",
+  "design": 4,
+  "name": "Agribusiness Demo 4",
+  "file": "models/agribusiness-4.glb.gz"
+ },
+ {
+  "sector": "Agribusiness",
+  "design": 5,
+  "name": "Agribusiness Demo 5",
+  "file": "models/agribusiness-5.glb.gz"
+ },
+ {
+  "sector": "Construction",
+  "design": 1,
+  "name": "Construction Demo 1",
+  "file": "models/construction-1.glb.gz"
+ },
+ {
+  "sector": "Construction",
+  "design": 2,
+  "name": "Construction Demo 2",
+  "file": "models/construction-2.glb.gz"
+ },
+ {
+  "sector": "Construction",
+  "design": 3,
+  "name": "Construction Demo 3",
+  "file": "models/construction-3.glb.gz"
+ },
+ {
+  "sector": "Construction",
+  "design": 4,
+  "name": "Construction Demo 4",
+  "file": "models/construction-4.glb.gz"
+ },
+ {
+  "sector": "Construction",
+  "design": 5,
+  "name": "Construction Demo 5",
+  "file": "models/construction-5.glb.gz"
+ },
+ {
+  "sector": "Information Technology",
+  "design": 1,
+  "name": "Information Technology Demo 1",
+  "file": "models/information-technology-1.glb.gz"
+ },
+ {
+  "sector": "Information Technology",
+  "design": 2,
+  "name": "Information Technology Demo 2",
+  "file": "models/information-technology-2.glb.gz"
+ },
+ {
+  "sector": "Information Technology",
+  "design": 3,
+  "name": "Information Technology Demo 3",
+  "file": "models/information-technology-3.glb.gz"
+ },
+ {
+  "sector": "Information Technology",
+  "design": 4,
+  "name": "Information Technology Demo 4",
+  "file": "models/information-technology-4.glb.gz"
+ },
+ {
+  "sector": "Information Technology",
+  "design": 5,
+  "name": "Information Technology Demo 5",
+  "file": "models/information-technology-5.glb.gz"
+ },
+ {
+  "sector": "Hospitality",
+  "design": 1,
+  "name": "Hospitality Demo 1",
+  "file": "models/hospitality-1.glb.gz"
+ },
+ {
+  "sector": "Hospitality",
+  "design": 2,
+  "name": "Hospitality Demo 2",
+  "file": "models/hospitality-2.glb.gz"
+ },
+ {
+  "sector": "Hospitality",
+  "design": 3,
+  "name": "Hospitality Demo 3",
+  "file": "models/hospitality-3.glb.gz"
+ },
+ {
+  "sector": "Hospitality",
+  "design": 4,
+  "name": "Hospitality Demo 4",
+  "file": "models/hospitality-4.glb.gz"
+ },
+ {
+  "sector": "Hospitality",
+  "design": 5,
+  "name": "Hospitality Demo 5",
+  "file": "models/hospitality-5.glb.gz"
+ }
+]

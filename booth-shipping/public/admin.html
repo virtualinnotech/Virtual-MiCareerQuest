@@ -60,6 +60,15 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
 .badge.locked{background:#fde8eb;color:#ae1b2f}
 .badge.unlocked{background:#e7f4ea;color:#1e7a3c}
 #optProgress{width:100%;max-width:520px;height:10px;margin-top:12px;accent-color:#1e65ae}
+.switch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border-radius:999px;background:#c9d8df;cursor:pointer;vertical-align:middle;transition:background .15s}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:left .15s}
+.switch:checked{background:#5a3fb0}
+.switch:checked::after{left:19px}
+.switch:disabled{opacity:.45;cursor:wait}
+.switch:focus-visible{outline:2px solid #1e65ae;outline-offset:2px}
+th.demoHead{text-align:center;white-space:nowrap}
+th.demoHead label{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;font-size:11px;color:#5a3fb0;cursor:pointer}
+td.demoCell{text-align:center}
 </style>
 </head>
 <body>
@@ -114,7 +123,7 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
  <div id="status" class="status"></div>
  <table>
   <thead>
-   <tr><th>Sector</th><th>#</th><th>Status</th><th>Company</th><th>Email</th><th>Shipped</th><th>Actions</th></tr>
+   <tr><th>Sector</th><th>#</th><th>Status</th><th>Company</th><th>Email</th><th>Shipped</th><th class="demoHead"><label title="Fill every empty slot with a demo booth (off removes them all)">Fill<input type="checkbox" id="fillToggle" class="switch"></label>Demo</th><th>Actions</th></tr>
   </thead>
   <tbody id="rows"></tbody>
  </table>
@@ -191,13 +200,16 @@ function renderRows(){
    <td>${s.company_name||'<span class=\"muted\">—</span>'}</td>
    <td>${s.email||'<span class=\"muted\">—</span>'}</td>
    <td>${fmtDate(s.shipped_at)||'<span class=\"muted\">—</span>'}</td>
+   <td class="demoCell">${s.status==='open'||s.status==='demo'?`<input type="checkbox" class="switch demoToggle" ${s.status==='demo'?'checked':''} aria-label="Demo booth in ${s.sector} #${s.slot_number}">`:'<span class="muted" title="An employer has this slot">—</span>'}</td>
    <td class="actions">
     ${s.status==='shipped'?`<a class="studioLink" href="/design.html?admin_sector=${encodeURIComponent(s.sector)}&admin_slot=${s.slot_number}" target="_blank" rel="noopener"><button>Edit in studio</button></a>`:''}
     ${s.email?`<button class="editBtn">Edit email</button>`:''}
     ${s.status!=='open'?`<button class="resetBtn danger">Reset slot</button>`:''}
    </td>
   </tr>
- `).join('')||'<tr><td colspan="7" class="muted" style="padding:20px;text-align:center">No matching slots.</td></tr>';
+ `).join('')||'<tr><td colspan="8" class="muted" style="padding:20px;text-align:center">No matching slots.</td></tr>';
+ const empty=allSlots.filter(s=>s.status==='open').length,demo=allSlots.filter(s=>s.status==='demo').length;
+ $('fillToggle').checked=demo>0&&empty===0;$('fillToggle').disabled=!empty&&!demo;
 }
 
 async function loadSlots(){
@@ -227,6 +239,24 @@ $('rows').addEventListener('click',async e=>{
   try{await api('/api/admin/reset-slot',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sector,slotNumber})});await loadSlots();}
   catch(err){alert(err.message);}
  }
+});
+
+// Demo booths fill empty slots so the whole venue can be tested live; an
+// employer taking a slot replaces it. Each row's switch toggles one slot.
+$('rows').addEventListener('change',async e=>{
+ if(!e.target.classList.contains('demoToggle'))return;
+ const tr=e.target.closest('tr'),on=e.target.checked;e.target.disabled=true;
+ try{await api('/api/admin/demo-slot',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sector:tr.dataset.sector,slotNumber:Number(tr.dataset.slot),on})});await loadSlots();}
+ catch(err){e.target.checked=!on;e.target.disabled=false;alert(err.message);}
+});
+// Fill: on fills every empty slot with a demo booth; off removes all demo booths.
+$('fillToggle').addEventListener('change',async e=>{
+ const on=e.target.checked,empty=allSlots.filter(s=>s.status==='open').length,demo=allSlots.filter(s=>s.status==='demo').length;
+ if(!confirm(on?`Fill ${empty} empty slot${empty===1?'':'s'} with demo booths?`:`Remove all ${demo} demo booth${demo===1?'':'s'}? Their slots become empty again.`)){e.target.checked=!on;return;}
+ e.target.disabled=true;
+ try{const r=await api('/api/admin/fill-demo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({on})});await loadSlots();setStatus('status',on?`Filled ${r.filled} empty slots with demo booths.`:`Removed ${r.cleared} demo booths.`);}
+ catch(err){e.target.checked=!on;setStatus('status',err.message,true);}
+ finally{e.target.disabled=false;renderRows();}
 });
 
 $('capacityRows').addEventListener('click',async e=>{

@@ -77,3 +77,16 @@ export async function boothLock(env) {
     return { locked: false, changedAt: null };
   }
 }
+
+// Demo booths for empty slots (the admin page's Demo / Fill toggles), so the
+// venue can be run full before every employer has shipped. The models live in
+// the project's demo-booths/ folder and are served from /demo-booths/: five
+// designs per sector, chosen by slot number so neighbouring booths differ.
+export const DEMO_SECTORS = new Set(['Manufacturing', 'Health Science', 'Agribusiness', 'Construction', 'Information Technology', 'Hospitality']);
+export const DEMO_DESIGNS = 5;
+export const DEMO_DESCRIPTION = 'Demo booth for testing the full venue. It is replaced as soon as an employer takes this slot.';
+export const DEMO_COLOR = '#8a8f98';
+export function demoBooth(sector, slotNumber) {
+  const design = ((slotNumber - 1) % DEMO_DESIGNS) + 1;
+  return { name: `${sector} Demo ${design}`, assetKey: `demo-booths/models/${slugify(sector)}-${design}.glb.gz` };
+}

@@ -7,4 +7,4 @@
 #rivian147 button[aria-pressed=true]{background:#d4e5c7;color:#17342c}
 #rivian147 svg{width:23px;height:23px}
 #rivianPrompt147{position:fixed;z-index:185;bottom:92px;left:50%;transform:translateX(-50%);background:#173c31;color:#fff;border:1px solid #a8c4a6;border-radius:6px;padding:12px 22px;font:600 16px system-ui;cursor:pointer}
-body.rivian147-driving #aim,body.rivian147-driving #cameraBtn,body.rivian147-driving #scooter100,body.rivian147-driving #staffPrompt,body.rivian147-driving #leftTools,body.rivian147-driving #rightTools,body.rivian147-driving #hubPrompt,body.rivian147-driving #sectorShortcuts,body.rivian147-driving #challengeHud41{display:none!important}
+body.rivian147-driving #aim,body.rivian147-driving #cameraBtn,body.rivian147-driving #scooter100,body.rivian147-driving #staffPrompt,body.rivian147-driving #leftTools,body.rivian147-driving #rightTools,body.rivian147-driving #hubPrompt,body.rivian147-driving #sectorShortcuts,body.rivian147-driving #challengeHud41,body.rivian147-driving #skillHud{display:none!important}
