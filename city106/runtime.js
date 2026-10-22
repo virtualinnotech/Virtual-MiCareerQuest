@@ -224,12 +224,12 @@ window.City106=(()=>{
   const sky=materials.get('City109 sky')?.baseTexture,enabled=!!sky&&!window.FarmScene63?.active;
   gl.uniform1f(uniforms.uCityAtmosphere??=gl.getUniformLocation(program,'uCityAtmosphere'),enabled?1:0);
   gl.uniform3fv(uniforms.uSunDirection??=gl.getUniformLocation(program,'uSunDirection'),sunDirection);
-  gl.uniform1f(uniforms.uCityTime??=gl.getUniformLocation(program,'uCityTime'),(performance.now()/1000)%3600);
+  gl.uniform1f(uniforms.uCityTime??=gl.getUniformLocation(program,'uCityTime'),((window.frameNow164?.()??performance.now())/1000)%3600);
   gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_2D,sky||whiteBaseMap);gl.uniform1i(uniforms.uSkyMap??=gl.getUniformLocation(program,'uSkyMap'),6);gl.activeTexture(gl.TEXTURE0);
   window.CityLighting131?.bind();
  }
  function updateDoors(){
-  const now=performance.now()/1000,dt=Math.min(.05,Math.max(0,now-doorTime));doorTime=now;
+  const now=(window.frameNow164?.()??performance.now())/1000,dt=Math.min(.05,Math.max(0,now-doorTime));doorTime=now;
   for(const door of swingDoors.values()){
    const [x,y,z]=door.hinge,near=Math.abs(player.position[0]-x)<1.9&&Math.abs(player.position[2]-z)<1.7,desired=near?door.direction*1.42:0;
    door.angle+=Math.max(-dt*2.1,Math.min(dt*2.1,desired-door.angle));
@@ -299,5 +299,5 @@ window.City106=(()=>{
    cached=b.worldBounds106={matrix:Array.from(m),lo:a,hi:z};
   }return cached;
  }
- return {prepareVenue,buildingGeometry,building,buildingSkin,surface,curbGeometry,spatialKey,bounds,visible,collectOccluders,finishOccluders,actorVisible,hiddenBox,drawVisible,trafficState,sunDirection,bindAtmosphere,resolveDoors,trafficSeconds:()=>trafficTime??performance.now()/1000,setTrafficTime(seconds){trafficTime=Number.isFinite(seconds)?seconds:null;trafficPhase=-1;},beginFrame(planes=null){framePlanes160=planes;drawingVenue=!window.FarmScene63?.active;bindAtmosphere();if(drawingVenue)updateTraffic(trafficTime??performance.now()/1000);},endFrame(){drawingVenue=false;framePlanes160=null;},setOcclusion(enabled){occlusion=!!enabled;},get batches(){return extraBatches;},get culling(){return culling;},snapshot:()=>({ready,error,occluders:occluders.length,trafficPhase,doors:[...swingDoors.values()].map(d=>({id:d.id,angle:d.angle})),...stats})};
+ return {prepareVenue,buildingGeometry,building,buildingSkin,surface,curbGeometry,spatialKey,bounds,visible,collectOccluders,finishOccluders,actorVisible,hiddenBox,drawVisible,trafficState,sunDirection,bindAtmosphere,resolveDoors,trafficSeconds:()=>trafficTime??(window.frameNow164?.()??performance.now())/1000,setTrafficTime(seconds){trafficTime=Number.isFinite(seconds)?seconds:null;trafficPhase=-1;},beginFrame(planes=null){framePlanes160=planes;drawingVenue=!window.FarmScene63?.active;bindAtmosphere();if(drawingVenue)updateTraffic(trafficTime??(window.frameNow164?.()??performance.now())/1000);},endFrame(){drawingVenue=false;framePlanes160=null;},setOcclusion(enabled){occlusion=!!enabled;},get batches(){return extraBatches;},get culling(){return culling;},snapshot:()=>({ready,error,occluders:occluders.length,trafficPhase,doors:[...swingDoors.values()].map(d=>({id:d.id,angle:d.angle})),...stats})};
 })();

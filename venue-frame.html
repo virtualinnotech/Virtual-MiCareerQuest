@@ -8,19 +8,19 @@
 <script src="./booth-layout139.js?v=20261019-hotel146"></script>
 <script src="./hotel146/core.js?v=20261020-hotel154"></script>
 <script src="./hospitality140/core.js?v=143"></script>
-<script src="./hospitality140/runtime.js?v=143"></script>
+<script src="./hospitality140/runtime.js?v=20261022-pacing164"></script>
 <script src="./farming36/harvest-core.js?v=20261002-utv53"></script>
 <script src="./missions99/core.js?v=20261019-hotel148"></script>
 <script src="./missions99/guard.js?v=20261022-media162"></script>
 <script src="./missions99/lucide.min.js"></script>
 <script src="./city106/district115.js?v=20261016-street128"></script>
-<script src="./city106/street128/runtime.js?v=20261021-crash162"></script>
+<script src="./city106/street128/runtime.js?v=20261022-pacing164"></script>
 <script src="./city106/road-pose117.js?v=20261019-performance150"></script>
 <script src="./city106/life111.js?v=20261021-crash162"></script>
 <script src="./city106/tree-pits137/core.js?v=20261017-treepits137"></script>
-<script src="./city106/runtime.js?v=20261022-wheels162"></script>
+<script src="./city106/runtime.js?v=20261022-pacing164"></script>
 <script src="./city106/lighting131/core.js?v=20261016-lighting131"></script>
-<script src="./city106/lighting131/runtime.js?v=20261019-hotel148"></script>
+<script src="./city106/lighting131/runtime.js?v=20261022-pacing164"></script>
 <script src="./city106/materials129.js?v=20261021-crash162"></script>
 <link rel="stylesheet" href="./missions99/ui.css?v=20261019-hotel148">
 <style>
@@ -77,6 +77,7 @@
 .controls-sub{font-size:12px;color:#a9c4d4;margin:0}
 .ml-sub{font-size:12px;color:#a9c4d4;margin:0 0 14px;text-align:left}
 .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.frame-rate164{margin-top:16px} #frameRate164{width:100%;padding:8px 10px;border-radius:8px;background:#152c40;color:#eef7fd;border:1px solid #ffffff30;font:inherit;font-size:13px;cursor:pointer} #frameRateNote164{font-size:12px;line-height:1.5;color:#a9c4d4;margin:8px 0 0}
 
 .controls-block{background:#0c2032;border:1px solid #ffffff18;border-radius:12px;padding:14px 16px}
 .controls-block-heading{font-size:11px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:#8fd4e1;display:flex;align-items:center;gap:6px;margin-bottom:8px}
@@ -187,6 +188,11 @@ body>header .brand img{display:block;width:220px;height:auto;aspect-ratio:904/17
 <div class="controls-block-heading"><span>🖱️</span> Mouse controls</div>
 <ul class="controls-list"><li><strong>Look around</strong><br>Move the mouse to look in any direction</li><li><strong>Zoom</strong><br>Scroll to zoom in and out</li><li><strong>Interact</strong><br>Press <strong>E</strong> to talk to nearby guides</li></ul>
 </div>
+</div>
+<div class="controls-block frame-rate164">
+<label class="controls-block-heading" for="frameRate164"><span>🎞️</span> Frame rate</label>
+<select id="frameRate164"><option value="auto">Auto (recommended)</option><option value="steady30">Steady 30 fps</option><option value="max">As fast as possible</option></select>
+<p id="frameRateNote164"></p>
 </div>
 </div>
 </div>
@@ -638,13 +644,57 @@ function sectorOverviewVisible139(b){
  if(b.cullBounds106){const {lo,hi}=b.cullBounds106;return hi[0]>=s.min[0]-1&&lo[0]<=s.max[0]+1&&hi[2]>=s.min[1]-1&&lo[2]<=s.max[1]+1;}
  return !b.skyline&&!b.vehicleInstance;
 }
+/* Steady frame pacing (164). A computer that can't finish a frame for every
+   screen refresh shows frames for one refresh, then two, in an uneven pattern:
+   at 45 fps on a 60 Hz screen everything that moves looks jittery. Drawing
+   every other refresh instead (30 fps on a 60 Hz screen) keeps each frame on
+   screen for the same time, so motion is even; movement is timed by the
+   clock, not by frames, so nothing moves slower. Auto uses steady 30 on
+   low-power devices from the start, and elsewhere once the game has stayed
+   under 48 fps for 6 seconds of play (after its first 10 seconds).
+   frameNow164() is the time of the frame being drawn, so everything that
+   animates by the clock samples the same instant. */
+let frameClock164=null;
+window.frameNow164=()=>frameClock164??performance.now();
+const FramePacing164=(()=>{
+ const KEY='mcqFrameRate164',MODES=['auto','steady30','max'];
+ let mode='auto',autoSteady=false,played=0,lastDrawn=null,windowStart=0,windowFrames=0,slow=0;
+ try{const saved=localStorage.getItem(KEY);if(MODES.includes(saved))mode=saved;}catch(e){}
+ const steady=()=>mode==='steady30'||(mode==='auto'&&autoSteady);
+ function note(){const el=document.getElementById('frameRateNote164');if(!el)return;
+  el.textContent=mode==='steady30'?'Steady 30 fps: every frame stays on screen for the same time, so motion is even.'
+   :mode==='max'?'As fast as possible: the highest frame rate, but motion can look uneven on slower computers.'
+   :autoSteady?'Auto is using steady 30 fps because this computer can\'t draw a new frame for every screen refresh. Motion is even, and nothing moves slower.'
+   :'Auto is running as fast as this computer allows. It switches to steady 30 fps if this computer can\'t keep up.';}
+ return {
+  // Start of every animation frame: true skips this screen refresh.
+  skip(t,last){return steady()&&t-last<1000/30-4;},
+  // Every frame drawn while playing. Gaps over 250 ms (paused, hidden tab,
+  // a loading hitch) restart the measurement instead of counting as slow.
+  drawn(t){
+   const gap=lastDrawn===null?0:t-lastDrawn;lastDrawn=t;
+   if(mode!=='auto'||autoSteady)return;
+   if(gap>250||(played+=gap)<10000){windowStart=t;windowFrames=0;return;}
+   windowFrames++;if(t-windowStart<2000)return;
+   slow=windowFrames*1000/(t-windowStart)<48?slow+1:0;windowStart=t;windowFrames=0;
+   if(slow>=3){autoSteady=true;note();}
+  },
+  lowPower(){if(!autoSteady){autoSteady=true;note();}},
+  set(next){if(!MODES.includes(next))return;mode=next;try{localStorage.setItem(KEY,next);}catch(e){}note();},
+  installUI(){const sel=document.getElementById('frameRate164');if(!sel)return;sel.value=mode;sel.onchange=()=>this.set(sel.value);note();},
+  get steady(){return steady();},
+  snapshot(){return {mode,steady:steady(),autoSteady};}
+ };
+})();
+window.FramePacing164=FramePacing164;FramePacing164.installUI();
 let renderBudget150=2400000,resolutionCheck150=0,resolutionGrow150=0;
 function updateRenderBudget150(now){
  if(state.quality>=2||state.paused||document.hidden||!state.fps){resolutionCheck150=now;return;}
  if(now-resolutionCheck150<2000)return;resolutionCheck150=now;
  const pixels=canvas.width*canvas.height;
  if(state.fps<28){renderBudget150=Math.max(600000,Math.min(renderBudget150,pixels)*.8);resolutionGrow150=now;}
- else if(state.fps>50&&now-resolutionGrow150>8000){renderBudget150=Math.min(2400000,renderBudget150*1.12);resolutionGrow150=now;}
+ // At steady 30 the frame rate never passes 50, so holding 30 is what counts.
+ else if(FramePacing164.steady?state.fps>29&&now-resolutionGrow150>20000:state.fps>50&&now-resolutionGrow150>8000){renderBudget150=Math.min(2400000,renderBudget150*1.12);resolutionGrow150=now;}
 }
 function renderSize150(width,height,dpr,quality,budget=2400000){
  // Keep the HUD at native resolution, but bound the 3D pixel workload on
@@ -1473,7 +1523,7 @@ function detectLowPowerDevice(){
 function applyDeviceTier(){
  const low=detectLowPowerDevice();
  // Keep textures, shadows and geometry on low-power machines; avoid supersampling their display.
- if(low){state.quality=1;const q=$('quality');if(q)q.value='1';}
+ if(low){state.quality=1;const q=$('quality');if(q)q.value='1';FramePacing164.lowPower();}
  return low;
 }
 // Booths optimized on the admin page (booth-shipping/public/booth-optimizer162.js)
@@ -2390,15 +2440,15 @@ function updateHud(){if(window.HubGuide)HubGuide.updatePrompt();
 }
 function readInput(){return{forward:keys.has('w')||keys.has('arrowup'),backward:keys.has('s')||keys.has('arrowdown'),left:keys.has('a')||keys.has('arrowleft'),right:keys.has('d')||keys.has('arrowright'),fast:keys.has('shift'),up:keys.has('e'),down:keys.has('q')};}
 window.addEventListener('keydown',e=>{if(window.CharacterInspector?.active){if(e.key==='Escape')CharacterInspector.close();return;}if(window.HubGuide?.snapshot().dialogOpen)return;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const k=e.key.toLowerCase();if(state.overview&&['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k))teleport(lastPlace.startsWith('information-hub')?'information-hub':((lastPlace.startsWith('shipped-')||lastPlace.startsWith('discovery-'))?lastPlace:(lastPlace==='exteriorRear'?'river':'entrance')));if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','q','e',' '].includes(k))e.preventDefault();keys.add(k);if(e.repeat)return;if(k==='c')toggle('debug');if(k==='v')toggle('firstPerson');if(k==='g')toggle('ghost');if(k==='r'){state.ghost=false;teleport(lastPlace,true);}if(k==='p')exportReport();if(k==='h')$('help').open=!$('help').open;if(k==='escape')keys.clear();const placeNames=['entrance','gallery','hall','it','stairs','balcony','river','agriInner','agriOuter'];if(k>='1'&&k<='9')teleport(placeNames[+k-1],true);});
-window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();pointer=null;});document.addEventListener('visibilitychange',()=>{keys.clear();accumulator=0;lastTime=performance.now();lastMotionTime=performance.now();});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();pointer=null;});document.addEventListener('visibilitychange',()=>{keys.clear();accumulator=0;lastTime=performance.now();});
 let pointer=null;canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('pointerdown',e=>{canvas.focus();canvas.setPointerCapture(e.pointerId);pointer={x:e.clientX,y:e.clientY};});canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
 canvas.addEventListener('pointermove',e=>{if(!pointer)return;const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;pointer={x:e.clientX,y:e.clientY};if(state.overview){const t=state.overview.target,d=sub(state.overview.camera,t),r=len(d),a=Math.atan2(d[0],d[2])-dx*.004,ph=Math.max(.05,Math.min(1.45,Math.asin(d[1]/r)+dy*.003));state.overview.camera=add(t,[r*Math.cos(ph)*Math.sin(a),r*Math.sin(ph),r*Math.cos(ph)*Math.cos(a)]);updateCamera(0,true);return;}if(state.firstPerson)player.yaw-=dx*.004;else state.orbitYaw-=dx*.004;state.pitch=Math.max(-.65,Math.min(.85,state.pitch+(state.firstPerson?-1:1)*dy*.003));});
 canvas.addEventListener('wheel',e=>{e.preventDefault();if(state.overview){const t=state.overview.target,d=sub(state.overview.camera,t),r=len(d),nr=Math.max(window.CharacterInspector?.active?.55:2.5,Math.min(window.CharacterInspector?.active?6:160,r*Math.exp(e.deltaY*.001)));state.overview.camera=add(t,mul(d,nr/r));updateCamera(0,true);return;}state.radius=Math.max(.7*PLAYER_SCALE,Math.min(8*PLAYER_SCALE,state.radius*Math.exp(e.deltaY*.001)));},{passive:false});
 $('places').onchange=e=>teleport(e.target.value,true);$('cameraBtn').onclick=()=>toggle('firstPerson');$('debugBtn').onclick=()=>toggle('debug');$('resetBtn').onclick=()=>{state.ghost=false;teleport(lastPlace,true);};$('reportBtn').onclick=exportReport;$('screenshotBtn').onclick=screenshot;$('markBtn').onclick=()=>{saveIssue($('issueNote').value.trim()||'Suspected blockage');toast('Location marked. Save report to share it.');};
 $('ghostCheck').onchange=()=>toggle('ghost');$('boundaryCheck').onchange=()=>toggle('boundaries');$('roofCheck').onchange=e=>{state.roofs=e.target.checked;if(state.overview)state.overview.cutawayRoof=false;updateHud();render();};$('restoreRoofs').onclick=()=>{state.roofs=true;if(state.overview)state.overview.cutawayRoof=false;updateHud();render();};$('sculptureMotion').onchange=e=>{LandmarkMotion.setEnabled(e.target.checked);canvas.focus();};$('anchorCheck').onchange=()=>toggle('anchors');$('speed').onchange=e=>{state.speed=Number(e.target.value);keys.clear();};$('quality').onchange=e=>state.quality=Number(e.target.value);$('shadowCheck').onchange=e=>state.sunShadows=e.target.checked;
 $('indoorGain').addEventListener('change',e=>{state.indoorGain=Number(e.target.value);render();});
-let hudTime=0,lastMotionTime=performance.now();
-function loop(t){if(MCQDiagnostics18.contextLost)return;const dt=Math.min((t-lastTime)/1000,.065),motionNow=performance.now(),motionDelta=(motionNow-lastMotionTime)/1000;lastMotionTime=motionNow;lastTime=t;if(window.CharacterInspector?.active){CharacterInspector.update(dt);render();requestAnimationFrame(loop);return;}if(state.ready&&!state.paused){if(window.FarmScene63?.active)FarmScene63.update(dt);else{advanceLandmarkMotion(motionDelta);RobotExhibit20.update(dt);}if(window.AnimatedCharacters)AnimatedCharacters.update(dt);if(!window.FarmScene63?.active){if(window.Crowd)Crowd.update(dt);EventFlow22.update(dt);window.CityLife111?.update(dt);}if(state.overview){render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}requestAnimationFrame(loop);return;}accumulator=Math.min(accumulator+dt,.09);const input=readInput();while(accumulator>=PHYSICS.step){advanceFramePlayer132(PHYSICS.step,input);accumulator-=PHYSICS.step;}updateCamera(dt);render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}if(t-hudTime>120){updateHud();hudTime=t;}}requestAnimationFrame(loop);}
+let hudTime=0;
+function loop(t){if(MCQDiagnostics18.contextLost)return;if(FramePacing164.skip(t,lastTime)){requestAnimationFrame(loop);return;}frameClock164=t;if(state.ready&&!state.paused)FramePacing164.drawn(t);const dt=Math.min((t-lastTime)/1000,.065),motionDelta=(t-lastTime)/1000;lastTime=t;if(window.CharacterInspector?.active){CharacterInspector.update(dt);render();requestAnimationFrame(loop);return;}if(state.ready&&!state.paused){if(window.FarmScene63?.active)FarmScene63.update(dt);else{advanceLandmarkMotion(motionDelta);RobotExhibit20.update(dt);}if(window.AnimatedCharacters)AnimatedCharacters.update(dt);if(!window.FarmScene63?.active){if(window.Crowd)Crowd.update(dt);EventFlow22.update(dt);window.CityLife111?.update(dt);}if(state.overview){render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}requestAnimationFrame(loop);return;}accumulator=Math.min(accumulator+dt,.09);const input=readInput();while(accumulator>=PHYSICS.step){advanceFramePlayer132(PHYSICS.step,input);accumulator-=PHYSICS.step;}updateCamera(dt);render();frameCount++;if(t-fpsSince>650){state.fps=frameCount*1000/(t-fpsSince);frameCount=0;fpsSince=t;}if(t-hudTime>120){updateHud();hudTime=t;}}requestAnimationFrame(loop);}
 // Small deterministic QA surface: controls only this local, offline harness.
 window.__walktest={roofsVisible,motion:window.LandmarkMotion,state,player,teleport,report:getReport,colliders,render:()=>{updateCamera(0,true);render();updateHud();},setPosition:(p,yaw=0)=>{player.position=[...p];player.yaw=yaw;player.vy=0;player.grounded=false;contact=null;},step:(seconds,input={})=>{const start=[...player.position];for(let i=0;i<Math.ceil(seconds/PHYSICS.step);i++)advancePlayer(PHYSICS.step,input);updateCamera(0,true);render();updateHud();return{start,end:[...player.position],grounded:player.grounded,contact:contact?.name||null};},raycast,resolveEllipsoid,shouldCollide,stats:()=>state.modelStats};
 for(const [key,p] of Object.entries(places)){if(!$('places').querySelector('option[value="'+key+'"]')){const o=document.createElement('option');o.value=key;o.textContent=p.label;$('places').append(o);}}
@@ -3848,7 +3898,7 @@ const Hall32 = (() => {
     const active = enabled && !window.FarmScene63?.active;
     gl.uniform1f(uniforms.uHall, active ? 1 : 0);
     if (!active) return;
-    gl.uniform1f(uniforms.uHallTime, (performance.now() / 1000) % 3600);
+    gl.uniform1f(uniforms.uHallTime, (frameNow164() / 1000) % 3600);
     gl.uniform4fv(uniforms['uHallRings[0]'], ringData);
     gl.uniform1i(uniforms.uHallRingCount, RINGS.length);
     gl.uniform4fv(uniforms['uHallSpot[0]'], spotData);
@@ -4229,7 +4279,7 @@ function revealStudentGamification(){
   teleport('entrance');state.firstPerson=false;state.radius=3.95*PLAYER_SCALE;state.orbitYaw=0;state.pitch=.1;
  }
  updateCamera(0,true);updateHud();
- await Loading155.finish();state.paused=false;keys.clear();lastTime=lastMotionTime=performance.now();accumulator=0;
+ await Loading155.finish();state.paused=false;keys.clear();lastTime=performance.now();accumulator=0;
  revealStudentGamification();showEmployerEditOverlay();canvas.focus();requestAnimationFrame(loop);
 }catch(e){console.error(e);showError(e.message||String(e));window.parent.postMessage({_mcq:true,token:window.SHIP_TOKEN,event:'venue-error',error:e.message||String(e)},'*');}})();
 </script>
@@ -4272,7 +4322,7 @@ function revealStudentGamification(){
 <script src="./drone44/farm-scene.js?v=20261020-loading155"></script>
 <script src="./pc66/arena.js?v=20261009-showcase92"></script>
 <script src="./pc66/room.js?v=20261009-room88"></script>
-<script src="./pc66/venue.js?v=20261020-loading155"></script>
+<script src="./pc66/venue.js?v=20261022-pacing164"></script>
 <script src="./robotics37/challenge-hud.js?v=20261019-hospitality141"></script>
 <script src="./hibachi145/core.js?v=20261019-hibachi145"></script>
 <script src="./hibachi145/scene.js?v=20261020-driving154"></script>
@@ -4286,10 +4336,10 @@ function revealStudentGamification(){
 <script src="./visitors100/rides103-data.js?v=20261012-rides104"></script>
 <script src="./city106/street128/bike-data.js?v=20261016-street128"></script>
 <script src="./city106/street128/docks.js?v=20261016-materials129"></script>
-<script src="./visitors100/scooter.js?v=20261021-fin162"></script>
+<script src="./visitors100/scooter.js?v=20261022-pacing164"></script>
 <link rel="stylesheet" href="./boothmedia162/media.css?v=20261022-media162">
 <script src="./boothmedia162/media.js?v=20261022-media162"></script>
-<script src="./visitors100/wayfinder103.js?v=20261014-city113"></script>
+<script src="./visitors100/wayfinder103.js?v=20261022-pacing164"></script>
 <link rel="stylesheet" href="./visitors100/rewards.css?v=20261019-hospitality141">
 <script src="./loading155/world.js?v=20261021-crash162"></script>
 </body></html>

@@ -55,7 +55,7 @@ window.Hospitality140=(()=>{
   sign([C.bottom+.10,2.24,-14.45],[1.72,.43],'HOSPITALITY','LEVEL 2',Math.PI/2);
   sign([-17.8,4.55,-30.245],[3.0,.75],'HOSPITALITY','GRAND GALLERY');image.close();
  }
- function frame(){if(!ready)return;const now=performance.now()/1000,dt=last===null?0:Math.min(.1,now-last);last=now;if(!state.paused&&!document.hidden)phase+=dt*.38;
+ function frame(){if(!ready)return;const now=(window.frameNow164?.()??performance.now())/1000,dt=last===null?0:Math.min(.1,now-last);last=now;if(!state.paused&&!document.hidden)phase+=dt*.38;
   const L=C.bottom-C.top;
   for(const s of steps){const d=((s.i/s.N*L-phase*s.lane.direction)%L+L)%L,t=C.bottom-d,y=C.height(t);s.b.modelMatrix=transform(C.point(s.lane,t+(s.edge?.078:0),y-.045+(s.edge?.047:0)),[C.laneWidth,s.edge?.008:.09,s.edge?.025:L/s.N+.006],0,Math.PI/2);s.b.center=C.point(s.lane,t,y);}
  }

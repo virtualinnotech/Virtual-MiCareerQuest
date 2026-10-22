@@ -91,7 +91,7 @@ window.StreetProps128=(()=>{
   const ambulance=window.Ambulance35?.snapshot();if(ambulance?.mounted)vehicles.push({id:'ambulance',p:[ambulance.x,window.District115?.heightAt(ambulance.x,ambulance.z)??-.1275,ambulance.z],yaw:ambulance.yaw,width:1.02,length:2.65,height:1.02,vx:ambulance.vx,vz:ambulance.vz});
   engine.setVehicles(vehicles);engine.step(Math.min(dt,.1));sync();
  }
- function frame(){const now=performance.now()/1000,dt=lastTime?Math.min(.1,now-lastTime):0;lastTime=now;tick(dt);}
+ function frame(){const now=(window.frameNow164?.()??performance.now())/1000,dt=lastTime?Math.min(.1,now-lastTime):0;lastTime=now;tick(dt);}
  function draw(){
   if(!engine||!finished)return;
   if(!glassBatch){

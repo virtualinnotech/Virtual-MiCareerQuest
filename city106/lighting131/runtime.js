@@ -37,7 +37,7 @@ window.CityLighting131=(()=>{
   return c;
  `;
  function frame(){
-  const now=performance.now()/1000,dt=last===null?0:Math.max(0,now-last);last=now;
+  const now=(window.frameNow164?.()??performance.now())/1000,dt=last===null?0:Math.max(0,now-last);last=now;
   if(!held&&!state.paused&&!document.hidden)seconds+=dt;
   current=core.sample(seconds);City106.sunDirection.splice(0,3,...current.sun);
  }

@@ -130,7 +130,7 @@ window.Scooter100=(()=>{
   cached=a.pose.map(p=>({translation:[...p.translation],rotation:[...p.rotation],scale:[...p.scale]}));solved.set(signature,{signature,pose:cached});if(solved.size>192)solved.delete(solved.keys().next().value);
  }
  function updateUI(){const id=mounted?activeId:nearest(),v=rides[id],visible=state.ready&&!busy()&&!state.overview&&(mounted||near(id));panel.hidden=!visible;panel.setAttribute('aria-label',v.label);mountBtn.hidden=mounted;mountBtn.disabled=!StudentProgress99.complete()||!v.parts;mountBtn.title=v.error?v.label+' unavailable':StudentProgress99.complete()?'Ride '+v.label+' (T)':'Complete your missions to unlock';mountBtn.setAttribute('aria-label',mountBtn.title);mountBtn.dataset.ride=id;for(const n of [meter,fastBtn,stopBtn,exitBtn])n.hidden=!mounted;exitBtn.title='Get off '+v.label+' (T)';meter.textContent=Math.round(Math.abs(speed)/S*2.237)+' mph';}
- function draw(planes){if(!state.ready||window.FarmScene63?.active)return;if(!loading)init();const time=performance.now()/1000;
+ function draw(planes){if(!state.ready||window.FarmScene63?.active)return;if(!loading)init();const time=(window.frameNow164?.()??performance.now())/1000;
   RideDocks128.draw();
   for(const [id,v] of Object.entries(rides)){const r=StreetProps128.matrix('Ride128 '+id,root(id)),on=mounted&&activeId===id;if(!v.parts||!sphereVisible([r[12],r[13]+.3,r[14]],.8,planes))continue;
    const glow=!on&&StudentProgress99.complete(),pulse=.55+.4*Math.sin(time*3),lit=on&&braking;

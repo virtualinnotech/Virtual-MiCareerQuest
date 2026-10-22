@@ -24,7 +24,7 @@ window.Wayfinder103=(()=>{
   const next=HubGuide.snapshot().route;if(next!==route)set(next);
   if(!route||!state.ready||state.overview||window.FarmScene63?.active)return;
   if(!meshes)init();
-  const now=performance.now()/1000,dt=Math.min(.1,Math.max(0,now-last));last=now;
+  const now=(window.frameNow164?.()??performance.now())/1000,dt=Math.min(.1,Math.max(0,now-last));last=now;
   const pos=[player.position[0],player.position[2]],floor=player.position[1]-PHYSICS.radii[1],s=sectorScaleAt(...pos),pulse=reduced?1:1+.10*Math.sin(now*3);
   if(!previous||Math.hypot(pos[0]-previous[0],pos[1]-previous[1])>1.8)previous=pos;
   for(const m of markers)if(!m.popped&&Math.abs(floor-floorHeightAt(m.x,m.z))<.3&&segmentDistance([m.x,m.z],previous,pos)<.23*s){m.popped=true;bursts.push({x:m.x,z:m.z,age:0});}
