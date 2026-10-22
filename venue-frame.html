@@ -687,12 +687,15 @@ const FramePacing164=(()=>{
  };
 })();
 window.FramePacing164=FramePacing164;FramePacing164.installUI();
-let renderBudget150=2400000,resolutionCheck150=0,resolutionGrow150=0;
+let renderBudget150=2400000,resolutionCheck150=0,resolutionGrow150=0,slowChecks164=0;
 function updateRenderBudget150(now){
  if(state.quality>=2||state.paused||document.hidden||!state.fps){resolutionCheck150=now;return;}
  if(now-resolutionCheck150<2000)return;resolutionCheck150=now;
  const pixels=canvas.width*canvas.height;
- if(state.fps<28){renderBudget150=Math.max(600000,Math.min(renderBudget150,pixels)*.8);resolutionGrow150=now;}
+ // At steady 30 one late frame already reads under 28, so it takes two slow
+ // checks in a row (4 s) before the picture gets smaller.
+ slowChecks164=state.fps<28?slowChecks164+1:0;
+ if(slowChecks164>=(FramePacing164.steady?2:1)){renderBudget150=Math.max(600000,Math.min(renderBudget150,pixels)*.8);resolutionGrow150=now;}
  // At steady 30 the frame rate never passes 50, so holding 30 is what counts.
  else if(FramePacing164.steady?state.fps>29&&now-resolutionGrow150>20000:state.fps>50&&now-resolutionGrow150>8000){renderBudget150=Math.min(2400000,renderBudget150*1.12);resolutionGrow150=now;}
 }
