@@ -29,15 +29,18 @@ export async function onRequestPost(context) {
   }
 
   // Same design choice as demoBooth() in _lib.js, done in SQL per sector.
+  // D1 binds JS numbers as REAL, so the design number is cast back to an
+  // integer before it goes into the name and file ("1", not "1.0").
+  const design = 'CAST(((slot_number - 1) % ?) + 1 AS INTEGER)';
   let filled = 0;
   for (const sector of DEMO_SECTORS) {
     const result = await env.DB
       .prepare(
         `UPDATE slots
             SET status = 'demo',
-                booth_name = ? || ' Demo ' || (((slot_number - 1) % ?) + 1),
+                booth_name = ? || ' Demo ' || ${design},
                 booth_description = ?, booth_color = ?,
-                booth_asset_key = 'demo-booths/models/' || ? || '-' || (((slot_number - 1) % ?) + 1) || '.glb.gz',
+                booth_asset_key = 'demo-booths/models/' || ? || '-' || ${design} || '.glb.gz',
                 shipped_at = datetime('now')
           WHERE status = 'open' AND sector = ?`
       )
