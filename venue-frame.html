@@ -849,8 +849,14 @@ function bindSunInstances(batch,instances){
  bindInstanceLayout160(batch.vao,pool.buffer);
  gl.uniform1i(sunUniforms.uInstanced,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,batch.ibo);gl.drawElementsInstanced(gl.TRIANGLES,batch.count,gl.UNSIGNED_INT,0,instances.length);
 }
+// Computers that can't hold 60 fps (steady 30 or Light graphics) refresh the
+// sun shadows every 15 s instead of every 3 s. A game day lasts 30 minutes, so
+// the sun moves about 1.5 degrees in that time and the cross-fade between the
+// two maps hides the step.
+let sunInterval166=SUN_INTERVAL132;
 function updateSunShadows(){
- const clock=CityLighting131.snapshot(),slot=Math.floor(clock.cycle/SUN_INTERVAL132),roof=roofsVisible();
+ const interval=FramePacing164.steady||GraphicsMode165.light?15:SUN_INTERVAL132,clock=CityLighting131.snapshot(),slot=Math.floor(clock.cycle/interval),roof=roofsVisible();
+ if(interval!==sunInterval166){sunInterval166=interval;if(sunSlot132!==null){sunSlot132=slot;lastSunRoof=null;sunNextReady164=false;}}
  // First map, or roofs shown/hidden: draw now. Props knocked over (they reset
  // lastSunRoof to null): redraw both maps a slice at a time instead.
  const invalid=sunSlot132===null||lastSunRoof!==null&&lastSunRoof!==roof,refresh=!invalid&&lastSunRoof===null;
@@ -859,26 +865,26 @@ function updateSunShadows(){
  // The enclosed lobby uses its own warm fixtures. Reuse the static outdoor
  // atlas seen through its windows; resume live solar captures on leaving.
  if(!invalid&&!refresh&&!sunPending150&&!sunJob164&&window.HotelCore146?.insideLobby150(camera))return;
- sunBlend132=clock.cycle/SUN_INTERVAL132-slot;
+ sunBlend132=clock.cycle/interval-slot;
  if(invalid){
   sunJob164=null;sunNextReady164=false;
-  sunLightVP=solarMatrix131(CityClock131.sample(slot*SUN_INTERVAL132).sun);drawSolarMap132(sunDepth,sunLightVP);
+  sunLightVP=solarMatrix131(CityClock131.sample(slot*interval).sun);drawSolarMap132(sunDepth,sunLightVP);
   sunNextVP132=sunLightVP;sunBlend132=0;sunPending150=true;sunSlot132=slot;lastSunRoof=roof;return;
  }
- if(refresh){lastSunRoof=roof;sunPending150=false;sunJob164=sunJob164?.kind==='current'?sunJob164:startSunJob164('current',solarMatrix131(CityClock131.sample(sunSlot132*SUN_INTERVAL132).sun));}
+ if(refresh){lastSunRoof=roof;sunPending150=false;sunJob164=sunJob164?.kind==='current'?sunJob164:startSunJob164('current',solarMatrix131(CityClock131.sample(sunSlot132*interval).sun));}
  else if(!sunJob164&&(sunPending150||slot!==sunSlot132)){
   if(!sunPending150){[sunDepth,sunNextDepth132]=[sunNextDepth132,sunDepth];sunLightVP=sunNextVP132;}
   // Reuse the already-rendered endpoint after a slow frame; never render both
   // endpoints to catch up and thereby make the next frame miss its deadline.
-  sunNextReady164=false;sunJob164=startSunJob164('next',solarMatrix131(CityClock131.sample((slot+1)*SUN_INTERVAL132).sun));
+  sunNextReady164=false;sunJob164=startSunJob164('next',solarMatrix131(CityClock131.sample((slot+1)*interval).sun));
   sunSlot132=slot;lastSunRoof=roof;sunPending150=false;
  }
  // Until the next map is complete, show the current map alone.
  if(!sunNextReady164)sunBlend132=0;
  if(!sunJob164||!stepSunJob164(sunJob164))return;
  const job=sunJob164;sunJob164=null;
- if(job.kind==='current'){[sunDepth,sunScratch164]=[sunScratch164,sunDepth];sunLightVP=job.matrix;sunJob164=startSunJob164('next',solarMatrix131(CityClock131.sample((sunSlot132+1)*SUN_INTERVAL132).sun));}
- else{[sunNextDepth132,sunScratch164]=[sunScratch164,sunNextDepth132];sunNextVP132=job.matrix;sunNextReady164=true;sunBlend132=clock.cycle/SUN_INTERVAL132-slot;}
+ if(job.kind==='current'){[sunDepth,sunScratch164]=[sunScratch164,sunDepth];sunLightVP=job.matrix;sunJob164=startSunJob164('next',solarMatrix131(CityClock131.sample((sunSlot132+1)*interval).sun));}
+ else{[sunNextDepth132,sunScratch164]=[sunScratch164,sunNextDepth132];sunNextVP132=job.matrix;sunNextReady164=true;sunBlend132=clock.cycle/interval-slot;}
 }
 // A sun-shadow refresh draws the whole venue and city again from the sun. In
 // one frame that is a hitch every few seconds on slower computers, so routine
@@ -1480,7 +1486,7 @@ async function prepareShipmentGPU(r){
  const groups=Performance21.groupShipmentParts(r);
  for(const [mi,parts] of groups){const m=r.j.materials?.[mi]||{},pbr=m.pbrMetallicRoughness||{},texture=await getTexture(pbr.baseColorTexture?.index),normalTexture=await getTexture(m.normalTexture?.index),nv=parts.reduce((n,p)=>n+p.pos.length/3,0),ni=parts.reduce((n,p)=>n+p.idx.length,0),v=new Float32Array(nv*6),uv=new Float32Array(nv*2),idx=new Uint32Array(ni);let vi=0,ii=0;
  for(const p of parts){for(let i=0;i<p.pos.length;i+=3){v.set(p.pos.subarray(i,i+3),(vi+i/3)*6);v.set(p.nor.subarray(i,i+3),(vi+i/3)*6+3);}uv.set(p.uv,vi*2);for(const n of p.idx)idx[ii++]=n+vi;vi+=p.pos.length/3;}
- const b=uploadBatch(v,idx,{color:pbr.baseColorFactor||[1,1,1,1],metal:pbr.metallicFactor??0,rough:pbr.roughnessFactor??.75,emission:m.emissiveFactor||[0,0,0],unlit:!!m.extensions?.KHR_materials_unlit,baseTexture:texture,normalTexture,normalScale:m.normalTexture?.scale??.5,transparent:m.alphaMode==='BLEND',shipmentId:r.id});b.uvbo=gl.createBuffer();gl.bindVertexArray(b.vao);gl.bindBuffer(gl.ARRAY_BUFFER,b.uvbo);gl.bufferData(gl.ARRAY_BUFFER,uv,gl.STATIC_DRAW);gl.enableVertexAttribArray(6);gl.vertexAttribPointer(6,2,gl.FLOAT,false,0,0);b.localBounds21=Performance21.boundsOfParts(parts);r.batches.push(b);
+ const b=uploadBatch(v,idx,{color:pbr.baseColorFactor||[1,1,1,1],metal:pbr.metallicFactor??0,rough:pbr.roughnessFactor??.75,emission:m.emissiveFactor||[0,0,0],unlit:!!m.extensions?.KHR_materials_unlit,baseTexture:texture,normalTexture,normalScale:m.normalTexture?.scale??.5,transparent:m.alphaMode==='BLEND',shipmentId:r.id});if(BoothMerge166.wanted())b.mergeSource166={v,uv};b.uvbo=gl.createBuffer();gl.bindVertexArray(b.vao);gl.bindBuffer(gl.ARRAY_BUFFER,b.uvbo);gl.bufferData(gl.ARRAY_BUFFER,uv,gl.STATIC_DRAW);gl.enableVertexAttribArray(6);gl.vertexAttribPointer(6,2,gl.FLOAT,false,0,0);b.localBounds21=Performance21.boundsOfParts(parts);r.batches.push(b);
  }
  gl.bindVertexArray(null);
 }
@@ -1491,6 +1497,52 @@ function indexExistingCollider(o){
  for(let x=x0;x<=x1;x++)for(let z=z0;z<=z1;z++){const key=x+','+z;if(!collisionGrid.has(key))collisionGrid.set(key,[]);collisionGrid.get(key).push(o);}
 }
 function reindexBasePhysics(){colliders.length=0;globalColliders.length=0;collisionGrid.clear();collisionTriangleCount=0;baselineColliders.filter(c=>!window.FarmScene63||FarmScene63.acceptCollider(c)).forEach(indexExistingCollider);}
+/* Booth merging (166). In the student fair booths never move, so the pieces of
+   different booths in one sector that share exactly the same material (same
+   textures, color and shading) are placed in world space once and drawn as one
+   piece: thousands of booth draws, and as many in every shadow refresh, become
+   a few hundred. Positions and normals go through the same matrix the shader
+   would apply, so lighting is unchanged. See-through pieces and pieces with
+   per-piece effects stay separate. Add &merge=0 to the address to turn it off. */
+const BoothMerge166=(()=>{
+ let merged=[],active=false;const used=new Set(),originals=new Map(),textureIds=new WeakMap();let nextTexture=1;
+ const textureId=t=>t?(textureIds.get(t)||(textureIds.set(t,nextTexture),nextTexture++)):0;
+ const wanted=()=>STANDALONE_MODE&&!employerModeParams()&&!/[?&]merge=0/.test(location.search);
+ const eligible=b=>b.mergeSource166&&b.modelMatrix&&!b.transparent&&b.color[3]>=.995&&!b.logoTexture&&!b.activeOutfit&&!b.boneTexture&&!b.hidden128&&!b.anchor&&!b.roof&&!b.vertexColor147&&!b.normalUV147&&b.farmHairCut==null&&!b.forceOpaque&&!b.hallRole32&&!b.roleMap&&b.alphaCutoff==null;
+ function build(){
+  const groups=new Map();
+  for(const r of shippedBooths.values())for(const b of r.batches){if(!eligible(b))continue;
+   const key=[r.industry,textureId(b.baseTexture),textureId(b.normalTexture),b.color.join(),b.metal,b.rough,b.emission.join(),b.unlit?1:0,b.normalScale,b.surfaceType||0].join('|');
+   let g=groups.get(key);if(!g)groups.set(key,g=[]);g.push(b);}
+  for(const list of groups.values()){if(list.length<2)continue;
+   let nv=0,ni=0;for(const b of list){nv+=b.mergeSource166.v.length/6;ni+=b.indices.length;}
+   const v=new Float32Array(nv*6),uv=new Float32Array(nv*2),idx=new Uint32Array(ni);let vo=0,io=0;
+   for(const b of list){const m=b.modelMatrix,src=b.mergeSource166.v,n=src.length/6;
+    for(let i=0;i<n;i++){const s=i*6,o=(vo+i)*6,x=src[s],y=src[s+1],z=src[s+2],nx=src[s+3],ny=src[s+4],nz=src[s+5];
+     v[o]=m[0]*x+m[4]*y+m[8]*z+m[12];v[o+1]=m[1]*x+m[5]*y+m[9]*z+m[13];v[o+2]=m[2]*x+m[6]*y+m[10]*z+m[14];
+     v[o+3]=m[0]*nx+m[4]*ny+m[8]*nz;v[o+4]=m[1]*nx+m[5]*ny+m[9]*nz;v[o+5]=m[2]*nx+m[6]*ny+m[10]*nz;}
+    uv.set(b.mergeSource166.uv,vo*2);const ids=b.indices;for(let k=0;k<ids.length;k++)idx[io+k]=ids[k]+vo;vo+=n;io+=ids.length;used.add(b);}
+   const f=list[0],one=uploadBatch(v,idx,{color:f.color,metal:f.metal,rough:f.rough,emission:f.emission,unlit:f.unlit,baseTexture:f.baseTexture,normalTexture:f.normalTexture,normalScale:f.normalScale,surfaceType:f.surfaceType,transparent:false,shipmentId:f.shipmentId,merged166:list.length,uv});
+   const {lo,hi}=one.localBounds106;one.center=lo.map((x,k)=>(x+hi[k])/2);one.cullRadius=len(sub(hi,lo))/2+.01;merged.push(one);
+  }
+  // The merged pieces leave their booths; originals are freed (tests keep them to compare).
+  const keep=!!window.boothMergeTest166;
+  for(const r of shippedBooths.values()){
+   if(keep)originals.set(r,r.batches.slice());
+   for(const b of r.batches){delete b.mergeSource166;if(used.has(b)&&!keep)freeBatch(b);}
+   r.batches=r.batches.filter(b=>!used.has(b));
+  }
+  const result={pieces:used.size,merged:merged.length};
+  if(!keep)used.clear();
+  active=merged.length>0;refreshShipments();
+  return result;
+ }
+ return {wanted,build,
+  get batches(){return active?merged:[];},
+  // Tests only (window.boothMergeTest166 keeps the originals): draw merged or original pieces.
+  use(on){if(!originals.size)return;active=!!on;for(const [r,list] of originals)r.batches=on?list.filter(b=>!used.has(b)):list.slice();refreshShipments();},
+  snapshot:()=>({active,merged:merged.length,pieces:used.size})};
+})();
 function refreshShipments(){Performance21.invalidateDebug();if(window.RobotExhibit20)RobotExhibit20.invalidate();if(window.Crowd)Crowd.invalidate();if(window.HubGuide)HubGuide.invalidateRoute();
  reindexBasePhysics();renderBatches=baseRenderBatches.slice();debugBatches=baseDebugBatches.slice();
  if(window.FarmScene63?.active)return;
@@ -1511,6 +1563,7 @@ function refreshShipments(){Performance21.invalidateDebug();if(window.RobotExhib
   r.collisionObjects=colliders.slice(start);r.colliderCount=r.collisionObjects.length;r.collisionKey=cacheKey;
   r.debugBatches=finishBatches(debug);debugBatches.push(...r.debugBatches);
  }
+ renderBatches.push(...BoothMerge166.batches);
  if(window.AnimatedCharacters)AnimatedCharacters.reposition();
  EventFlow22.invalidate();lastSunRoof=null;state.modelStats.shippedBooths=shippedBooths.size;state.modelStats.colliderObjects=colliders.length;
  state.modelStats.boothTriangles=[...shippedBooths.values()].reduce((n,r)=>n+r.triangles,0);updateShipmentUI();updateHud();
@@ -1714,6 +1767,7 @@ async function loadShippedBoothsFromManifest(){
     if(!employerModeParams()){const r=shippedBooths.get(id);if(r&&r.collisionKey){r.model=null;r.bin=null;r.j=null;r.parts=[];}}
    }catch(e){boothsLeftOut162.push({sector:b.sector,slot:b.slot_number,name:b.booth_name,error:e.message});console.warn('Booth left out of the venue:',b.sector,b.slot_number,b.booth_name,e);}
   }
+  if(BoothMerge166.wanted()){try{window.boothMerge166=BoothMerge166.build();}catch(e){console.warn('Booth merging skipped:',e);}}
  }catch(e){if(Loading155.blocked)throw e;console.warn('Manifest fetch failed:',e);}
  finally{boothLibrary162.clear();}
 }
