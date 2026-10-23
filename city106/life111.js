@@ -453,8 +453,11 @@ if(typeof window!=='undefined')window.CityLife111=(()=>{
   if(initialized||!config||typeof CrowdGraphics==='undefined'||!CrowdGraphics.ready)return;
   const models=['sara_character','roger_character','zoe','jason_character','liz','brad_character'].map(id=>characterState.models.get(id)).filter(m=>m?.walk);
   if(!models.length)return;
+  // The park strip beside DeVos became buildings (westfront172): its walk
+  // moves to the sidewalk and the grove walk inside the hospitality addition goes.
+  if(window.WestFrontCore172)config.walks=WestFrontCore172.walks(config.walks);
   for(const w of config.walks){
-   w.width=w.id==='front'?.97:w.id==='east'?.57:w.id==='river'?1.15:w.id.startsWith('park')?.60:.32;
+   w.width=w.width172||(w.id==='front'?.97:w.id==='east'?.57:w.id==='river'?1.15:w.id.startsWith('park')?.60:.32);
    w.offset=Math.min(.28,w.width-.04,CityLifeCore111.walkEndMargin(w));
    const cross=w.axis===0?2:0;w.obstacles=pedestrianObstacles151().filter(o=>o.hi[w.axis]>w.start-1&&o.lo[w.axis]<w.end+1&&o.lo[cross]<w.cross+w.width+.4&&o.hi[cross]>w.cross-w.width-.4);
   }

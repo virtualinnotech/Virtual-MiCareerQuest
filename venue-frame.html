@@ -14,7 +14,9 @@ for(const name of ['localStorage','sessionStorage'])try{window[name].getItem('mc
 <script src="./booth-layout139.js?v=20261019-hotel146"></script>
 <script src="./hotel146/core.js?v=20261020-hotel154"></script>
 <script src="./hospitality140/core.js?v=143"></script>
+<script src="./westfront172/core.js?v=20261023-front172"></script>
 <script src="./hospitality140/runtime.js?v=20261022-pacing164"></script>
+<script src="./westfront172/runtime.js?v=20261023-front172"></script>
 <script src="./farming36/harvest-core.js?v=20261002-utv53"></script>
 <script src="./missions99/core.js?v=20261023-journey166"></script>
 <script src="./missions99/guard.js?v=20261022-media162"></script>
@@ -22,9 +24,9 @@ for(const name of ['localStorage','sessionStorage'])try{window[name].getItem('mc
 <script src="./city106/district115.js?v=20261016-street128"></script>
 <script src="./city106/street128/runtime.js?v=20261022-pacing164"></script>
 <script src="./city106/road-pose117.js?v=20261019-performance150"></script>
-<script src="./city106/life111.js?v=20261021-crash162"></script>
+<script src="./city106/life111.js?v=20261023-front172"></script>
 <script src="./city106/tree-pits137/core.js?v=20261017-treepits137"></script>
-<script src="./city106/runtime.js?v=20261022-lighter165"></script>
+<script src="./city106/runtime.js?v=20261023-front172"></script>
 <script src="./city106/lighting131/core.js?v=20261016-lighting131"></script>
 <script src="./city106/lighting131/runtime.js?v=20261022-pacing164"></script>
 <script src="./city106/materials129.js?v=20261021-crash162"></script>
@@ -1267,6 +1269,7 @@ async function loadVenue(buffer){const {json:j,bin}=parseGLB(buffer);RobotExhibi
  City106.finishOccluders();
  StreetProps128.finish();
  await Hospitality140.init();
+ await window.WestFront172?.init();
  window.walkSurfacesReady118=true;
  state.modelStats={informationHub:j.extras?.informationHubV6,eventFinishes:j.extras?.eventFinishesV5,embeddedMaterialImages:venueImages.size,exhibitImprovements:j.extras?.exhibitImprovementsRevision||null,animatedLandmarks:j.animations?.map(a=>a.name)||[],animatedMeshBatches:animatedInstances.length,discoveryLayout:j.extras?.discoveryLayout||null,nodes:j.nodes.length,meshes:j.meshes.length,renderTriangles,colliderObjects:colliders.length,collisionTriangles:collisionTriangleCount,explicitHiddenColliders:colliders.filter(o=>o.invisible).length,renderBatches:renderBatches.length,skylineBuildings:skylineInstances.filter(b=>!b.vehicleInstance).length,schoolBuses:j.extras?.busDropoff?.counts?.total||0,busQueue:j.extras?.busDropoff?.counts||{},busDimensionsWorld:j.extras?.busDropoff?.bus?.dimensionsWorld||[],cityBuildings:j.extras?.cityExpansion?.addedBuildings||0,cityScaleRevision:j.extras?.cityScaleRevision||null,cityBlocks:j.extras?.cityExpansion?.cityBlocks||0,citySeed:j.extras?.cityExpansion?.seed||null,buildingTypes:j.extras?.changes?.buildingTypesUsed||[],blueBridge:j.extras?.blueBridgeRevision||null,architecturalExterior:j.extras?.architecturalExteriorRevision||null,connectedEntrance:j.extras?.connectedEntranceRevision||null,interiorLighting:j.extras?.interiorLightingRevision||null,buildVersion:j.extras?.walkTestVersion||"unknown",uniqueSkylineGpuMeshes:new Set(skylineInstances.filter(b=>!b.vehicleInstance).map(b=>b.sharedKey)).size,uniqueBusGpuMeshes:new Set(skylineInstances.filter(b=>b.vehicleInstance).map(b=>b.sharedKey)).size};
 }

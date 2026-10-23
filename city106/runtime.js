@@ -61,7 +61,7 @@ window.City106=(()=>{
    }catch(e){detailBytes150=null;console.warn('Keeping original city detail:',e.message);}
    const {json:a,bin}=parseGLB(bytes),images=await loadVenueMaterialImages(a,bin),shared=new Map();
    treePits137=a.extras.assets130?.treePits137?.pits||[];
-   window.CityLighting131?.configure(a.extras.lighting131);
+   window.CityLighting131?.configure(window.WestFrontCore172&&a.extras.lighting131?{...a.extras.lighting131,lights:WestFrontCore172.lights(a.extras.lighting131.lights||[])}:a.extras.lighting131);
    for(const name of a.extras.assets130?.grassAreas||[])grassAreas130.add(name);
    for(let i=0;i<a.materials.length;i++){const index=a.materials[i].normalTexture?.index;if(index!==undefined)normalImages.set(i,await embeddedGLBTexture(a,bin,index));}
    a.materials.forEach((m,i)=>materials.set(m.name,materialProps(a,images,i)));
@@ -72,13 +72,15 @@ window.City106=(()=>{
    for(const n of a.nodes){if(n.mesh===undefined)continue;
     if(window.HotelCore146?.removeOriginal(n.name||''))continue;
     if(window.HospitalityCore140?.removeOriginal(n.name||''))continue;
-    if(window.HospitalityCore140){
-     const m=trs(n),lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
+    if(window.HospitalityCore140||window.WestFrontCore172){
+     const m=trs(n),lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity],kind=[n.extras?.asset130,n.extras?.furnishing107].filter(Boolean).join(' ');
      for(const pr of a.meshes[n.mesh].primitives){const ac=a.accessors[pr.attributes.POSITION];for(const x of[ac.min[0],ac.max[0]])for(const y of[ac.min[1],ac.max[1]])for(const z of[ac.min[2],ac.max[2]]){const p=tp(m,x,y,z);for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],p[k]);hi[k]=Math.max(hi[k],p[k]);}}}
-     if(HospitalityCore140.clearsGarden(n.name,[n.extras?.asset130,n.extras?.furnishing107].filter(Boolean).join(' '),lo,hi))continue;
+     if(window.HospitalityCore140?.clearsGarden(n.name,kind,lo,hi))continue;
+     // The park strip on the DeVos west side is now buildings (westfront172).
+     if(window.WestFrontCore172?.clears(n.name,kind,lo,hi))continue;
     }
-    if((n.extras?.tree||n.extras?.furnishing107||n.extras?.trafficSignal108||n.extras?.detail109||n.extras?.detail111)&&!n.extras?.life111&&!n.extras?.vegetation115&&window.HarvestCore36?.inField(n.translation[0],n.translation[2]))continue;
-    const world=trs(n),fixtureOffset=window.HospitalityCore140?.fixtureOffset(n.name||'');
+    if((n.extras?.tree||n.extras?.furnishing107||n.extras?.trafficSignal108||n.extras?.detail109||n.extras?.detail111)&&!n.extras?.life111&&!n.extras?.vegetation115&&!window.WestFrontCore172?.keepsSignal(n.name||'')&&window.HarvestCore36?.inField(n.translation[0],n.translation[2]))continue;
+    const world=trs(n),fixtureOffset=window.HospitalityCore140?.fixtureOffset(n.name||'')||window.WestFrontCore172?.moved(n.name||'');
     if(fixtureOffset)for(let i=0;i<3;i++)world[12+i]+=fixtureOffset[i];
     if(n.extras?.colliderMesh126)for(const pr of a.meshes[n.mesh].primitives){
      const local=accessor(a,bin,pr.attributes.POSITION),positions=new Float32Array(local.length);for(let i=0;i<local.length;i+=3)positions.set(tp(world,...local.subarray(i,i+3)),i);

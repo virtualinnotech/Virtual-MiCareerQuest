@@ -29,6 +29,7 @@ mkdirSync(path.join(cityDestination,'dogs112'),{recursive:true});
 copyFileSync(path.resolve(__dirname,'../../city106/dogs112/dog.glb'),path.join(cityDestination,'dogs112/dog.glb'));
 require('node:fs').cpSync(path.resolve(__dirname,'../../visitors100'),path.resolve(__dirname,'../public/visitors100'),{recursive:true,filter:src=>require('node:fs').statSync(src).isDirectory()||/\.(glb|js|css)$/.test(src)});
 require('node:fs').cpSync(path.resolve(__dirname,'../../journey166'),path.resolve(__dirname,'../public/journey166'),{recursive:true});
+require('node:fs').cpSync(path.resolve(__dirname,'../../westfront172'),path.resolve(__dirname,'../public/westfront172'),{recursive:true});
 require('node:fs').cpSync(path.resolve(__dirname,'../../diagnose165'),path.resolve(__dirname,'../public/diagnose165'),{recursive:true});
 require('node:fs').cpSync(path.resolve(__dirname,'../../demo-booths'),path.resolve(__dirname,'../public/demo-booths'),{recursive:true,filter:src=>require('node:fs').statSync(src).isDirectory()||/\.(gz|png|webp|jpg)$/.test(src)});
 require('node:fs').cpSync(path.resolve(__dirname,'../../boothmedia162'),path.resolve(__dirname,'../public/boothmedia162'),{recursive:true});
