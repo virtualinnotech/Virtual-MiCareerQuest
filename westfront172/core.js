@@ -16,6 +16,13 @@ window.WestFrontCore172=(()=>{
   // Its back wall shows past the DeVos front (z 33.93) and is finished there.
   hotel:{z:[20.8,36.8],back:-24.0,height:8.6,exposedBack:33.93},
   behind:{x:[-27.4,-23.0],z:[6.4,13.4],height:9.6},
+  // Hotel interior (174): lobby behind the canopy (revolving door in the
+  // middle, check-in desk to the left, dome over a round rug) and the
+  // restaurant inside the glass entrance, reached through the pier.
+  interior:{floor:-.06,ground:-.066,door:{x:-27.0,z:-1.05,r:.55,height:1.0},
+   lobby:{x:[-27.0,-22.05],z:[-9.4,5.0],ceiling:1.78,dome:{x:-24.6,z:-1.05,r:1.3},desk:{x:[-26.3,-23.3],z:[-4.65,-4.3]},partition:-5.6},
+   pier:{x:[-26.6,-22.4],top:1.35},
+   restaurant:{x:[-29.5,-22.05],z:[5.72,13.3],ceiling:3.5,mezzanine:{x:-23.9,y:1.75}}},
   // Ten glass floors on top of the hospitality addition (its roof is 7.06).
   glassTower:{x:[-29.9,-5.6],z:[-29.8,-13.8],base:7.06,floors:10,floorHeight:1.05},
   // Skywalk over westbridge from the older hotel to the building opposite.
@@ -42,17 +49,23 @@ window.WestFrontCore172=(()=>{
  function clears(name,kind,lo,hi){
   if(!inStrip((lo[0]+hi[0])/2,(lo[2]+hi[2])/2))return false;
   // "tree" must start a word: signal and lamp names contain "street".
-  return /(^|[^a-z])trees?([^a-z]|$)|tree soil|root collar|lawn|tuft|grass|bench|trash|\bbins?\b|fallen leaves|park streetlight|sidewalk approach|planter|shrub|bush|flower/i.test(name+' '+kind);
+  return /(^|[^a-z])trees?([^a-z]|$)|tree soil|root collar|lawn|tuft|grass|bench|trash|\bbins?\b|fallen leaves|park streetlight|park path|sidewalk approach|planter|shrub|bush|flower/i.test(name+' '+kind);
  }
  function inside(x,z,margin=0){
   if(z<blocks.devos.z[0]-margin||z>blocks.hotel.z[1]+margin||x<front-margin)return false;
   const back=z>blocks.entrance.z[1]?-24.0:blocks.devos.back;return x<=back+margin;
  }
+ // The park path pavers are one mesh across the city's parks: only the
+ // triangles inside this block are left out (from drawing and collision).
+ const trims=name=>/^District115 park path joined pavers/.test(name);
+ function trimSurface(g,world){const keep=[],P=i=>{const x=g.pos[i*3],y=g.pos[i*3+1],z=g.pos[i*3+2];return [world[0]*x+world[4]*y+world[8]*z+world[12],world[2]*x+world[6]*y+world[10]*z+world[14]];};
+  for(let i=0;i<g.idx.length;i+=3){const a=P(g.idx[i]),b=P(g.idx[i+1]),c=P(g.idx[i+2]);if(!inside((a[0]+b[0]+c[0])/3,(a[1]+b[1]+c[1])/3,.05))keep.push(g.idx[i],g.idx[i+1],g.idx[i+2]);}
+  return {...g,idx:new Uint32Array(keep)};}
  // The park walk ran through the new buildings (and the hospitality
  // addition); its walkers use the sidewalk in front instead. The grove walk
  // was entirely inside the hospitality addition.
  function walks(list){
   return list.filter(w=>w.id!=='park-grove').map(w=>w.id==='park'?{...w,cross:-31.05,start:-12.2,end:33.4,width172:.30}:w);
  }
- return {front,ground,blocks,strip,calder,clears,inside,walks,moved,lights,keepsSignal};
+ return {front,ground,blocks,strip,calder,clears,inside,walks,moved,lights,keepsSignal,trims,trimSurface};
 })();

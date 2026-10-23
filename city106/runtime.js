@@ -93,7 +93,8 @@ window.City106=(()=>{
     }
     if(n.extras?.contactOnly115)continue;
     for(const pr of a.meshes[n.mesh].primitives){
-     const hotelGround=window.HotelCore146?.groundNames.has(n.name)?HotelCore146.pavingSource({pos:accessor(a,bin,pr.attributes.POSITION),nor:accessor(a,bin,pr.attributes.NORMAL),uv:pr.attributes.TEXCOORD_0===undefined?null:accessor(a,bin,pr.attributes.TEXCOORD_0),idx:accessor(a,bin,pr.indices)},world):null;
+     const groundSource=()=>({pos:accessor(a,bin,pr.attributes.POSITION),nor:accessor(a,bin,pr.attributes.NORMAL),uv:pr.attributes.TEXCOORD_0===undefined?null:accessor(a,bin,pr.attributes.TEXCOORD_0),idx:accessor(a,bin,pr.indices)});
+     const hotelGround=window.HotelCore146?.groundNames.has(n.name)?HotelCore146.pavingSource(groundSource(),world):window.WestFrontCore172?.trims(n.name)?WestFrontCore172.trimSurface(groundSource(),world):null;
      if(hotelGround&&!hotelGround.idx.length)continue;
      if(n.extras?.surface115){const local=hotelGround?.pos||accessor(a,bin,pr.attributes.POSITION),positions=new Float32Array(local.length);for(let i=0;i<local.length;i+=3)positions.set(tp(world,...local.subarray(i,i+3)),i);registerCollider(n.name,'districtSurface115',positions,hotelGround?.idx||accessor(a,bin,pr.indices),false,{});}
      const lens=a.materials[pr.material].extras?.trafficLens108,axis=n.extras?.trafficSignal108?.axis;

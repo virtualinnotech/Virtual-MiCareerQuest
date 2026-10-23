@@ -11,6 +11,17 @@ the street wall from the real Lyon Street view:
   canopy (marquee bulbs, round granite columns, lobby with sconces) over a
   drive-through — entrance lane, the "AMWAY GRAND PLAZA" granite planter,
   exit lane — with brick driveway aprons across the sidewalk;
+- inside, behind a big revolving glass door (brass frame, slowly turning) in
+  the middle of the lobby wall: the Amway lobby — gold marble floor, the
+  dome with its gold ceiling, dark wood ring and brass bowl chandelier, the
+  round blue rug with a pedestal table of flowers and stanchions, the wood
+  check-in desk on the left and "THE PANTLIND" corridor ahead. A passage on
+  the right leads into the restaurant behind the glass entrance: herringbone
+  floor, white stacked columns along the windows, a bar with white stools and
+  gold-mesh wine cabinets, marble tables with gray chairs, the wave mural, a
+  mezzanine with a glass railing and purple cove lighting. The rooms have
+  their own lights (on day and night); the drive-through is red brick from
+  the curb to the lobby wall (the park path under it is trimmed out);
 - ten glass floors on top of the hospitality addition, matching the Amway
   glass tower;
 - a skywalk (stained concrete, dark glass barrel vault with white ribs) over
