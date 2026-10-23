@@ -161,8 +161,8 @@ window.StudentRewards100=(()=>{
  const KEY='mcqScooterReward_v1';let seen=false,claimed=false,paused=false,focus=null;
  try{const s=JSON.parse(localStorage.getItem(KEY));seen=!!s?.seen;claimed=!!s?.claimed;}catch{}
  const dialog=document.createElement('dialog');dialog.id='reward100';dialog.setAttribute('aria-labelledby','rewardTitle100');dialog.append(lucide.createElement(lucide.icons.Gift));
- const title=document.createElement('h2');title.id='rewardTitle100';title.textContent='You finished every mission! Your prize: ride a Segway.';dialog.append(title);
- const where=document.createElement('p');where.textContent='Three Segways are parked by the box office, just inside the front entrance. Walk up to one and press T to ride.';dialog.append(where);
+ const title=document.createElement('h2');title.id='rewardTitle100';title.append('You finished every mission!',document.createElement('br'),'Now ride!');dialog.append(title);
+ const where=document.createElement('p');where.textContent='Check out the Segways by the box office, the bikes and scooters out front, and maybe even a vehicle parked outside. Walk up to any of them and press T to ride.';dialog.append(where);
  const actions=document.createElement('div');actions.className='reward-actions';dialog.append(actions);
  function save(){try{localStorage.setItem(KEY,JSON.stringify({seen,claimed}));}catch{}}
  function close(){if(!dialog.open)return;dialog.close();state.paused=paused;keys.clear();focus?.focus?.();}
