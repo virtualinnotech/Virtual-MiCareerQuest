@@ -12,6 +12,7 @@ window.Scooter100=(()=>{
  let activeId='segway-1',leanX=0,leanZ=0,steer=0,braking=false,tail=null,head136=null,headBody136=null;
  const ride=()=>rides[activeId];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const CRASH_SPEED=1.6;let crashing=false;
  let loading=false,error=null,ring=null,mounted=false,speed=0,boost=false,brake=false,saved=null,lastUI=0,poseError=[];
  let poseCache=new WeakMap();
  const panel=document.createElement('div');panel.id='scooter100';panel.hidden=true;panel.setAttribute('aria-label','Scooter');document.body.append(panel);
@@ -24,7 +25,16 @@ window.Scooter100=(()=>{
  hold(fastBtn,v=>boost=v);hold(stopBtn,v=>brake=v);
  const busy=()=>window.Rivian147?.mounted||window.Hotel146?.active||!!(window.FarmScene63?.active||window.Forklift34?.mounted||window.Ambulance35?.mounted||window.Farming36?.mounted||window.Robotics37?.active||window.Crane39?.active||window.MRI42?.active||window.Welding43?.active||window.Drone44?.mission||window.PCChallenge66?.active);
  const scale=()=>S*sectorScaleAt(player.position[0],player.position[2]);
- function root(id=activeId){const v=rides[id],parked=v.parked,on=mounted&&id===activeId,pose=on?walkingPose132():player,p=on?[pose.position[0],pose.position[1]-PHYSICS.radii[1],pose.position[2]]:[parked.x,parked.y??floorHeightAt(parked.x,parked.z),parked.z],s=S*sectorScaleAt(p[0],p[2]);return transform(p,[s,s,s],0,(on?pose.yaw:parked.yaw)+Math.PI);}
+ // A crashed ride lies where it stopped (fall173): bikes and scooters on
+ // their side, the Segway forward over its wheels, settling over half a second.
+ function sizeOf(id){const v=rides[id];if(v.size173)return v.size173;const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
+  for(const p of v.parts||[]){const b=p.batch.localBounds106;if(!b)continue;for(const x of[b.lo[0],b.hi[0]])for(const y of[b.lo[1],b.hi[1]])for(const z of[b.lo[2],b.hi[2]]){const q=tp(p.matrix,x,y,z);for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],q[k]);hi[k]=Math.max(hi[k],q[k]);}}}
+  return v.size173=v.parts?{lo,hi}:null;}
+ function tipMatrix(id){const v=rides[id],t=v.tipped,size=sizeOf(id);if(!t||!size)return IDENTITY;const u=Math.min(1,(performance.now()-t.start)/550),ease=1-(1-u)**3;
+  if(isSegway(id)){const axle=dataFor(id).wheels[0]?.pivot||[0,.1,0],a=1.22*ease,c=Math.cos(a),sn=Math.sin(a);return mm(mm(transform([0,axle[1],axle[2]]),[1,0,0,0,0,c,sn,0,0,-sn,c,0,0,0,0,1]),transform([0,-axle[1],-axle[2]]));}
+  const side=t.side,edge=side>0?size.hi[0]:-size.lo[0],a=-side*1.48*ease;return mm(mm(transform([side*edge,0,0]),rz(a)),transform([-side*edge,0,0]));}
+ function root(id=activeId){const base=root173(id),v=rides[id];return v.tipped&&!(mounted&&id===activeId)?mm(base,tipMatrix(id)):base;}
+ function root173(id=activeId){const v=rides[id],parked=v.parked,on=mounted&&id===activeId,pose=on?walkingPose132():player,p=on?[pose.position[0],pose.position[1]-PHYSICS.radii[1],pose.position[2]]:[parked.x,parked.y??floorHeightAt(parked.x,parked.z),parked.z],s=S*sectorScaleAt(p[0],p[2]);return transform(p,[s,s,s],0,(on?pose.yaw:parked.yaw)+Math.PI);}
  const headAnchor136=id=>rides[id].kind==='bike'?[0,1.12,.46]:isSegway(id)?[0,1.12,.35]:[0,1.10,.29];
  function headlights136(){
   if(!mounted||busy())return [];
@@ -41,7 +51,8 @@ window.Scooter100=(()=>{
   for(const [id,v] of Object.entries(rides))try{const kind=v.kind||id;loaded[kind]??=await DroneAssets44.load(kind==='bike'?'bike':kind+'103',{base:kind==='bike'?'./city106/street128/':'./visitors100/'});v.parts=loaded[kind].map(p=>({...p,batch:{...p.batch}}));for(const w of dataFor(id).wheels)v.angles[w.name]=0;if(v.dockHome)RideDocks128.registerRide(id,v,root(id));}catch(e){v.error=e.message;error=e.message;console.warn(id,e);}
   await RideDocks128.init();StreetProps128.finish();
  }
- function mount(id=nearest()){if(mounted||!rides[id]?.parts||!StudentProgress99.complete()||busy()||state.paused||state.overview||state.ghost||!near(id))return false;
+ function mount(id=nearest()){if(mounted||!rides[id]?.parts||!StudentProgress99.complete()||busy()||state.paused||state.overview||state.ghost||!near(id)||window.Fall173?.active)return false;
+  rides[id].tipped=null;
   if(StreetProps128.disabled('Ride128 '+id))return false;
   activeId=id;const parked=ride().parked;StreetProps128.enable('Ride128 '+id,false);
   const target=[parked.x,(parked.y??floorHeightAt(parked.x,parked.z))+PHYSICS.radii[1]+.002,parked.z],sweep=resolveEllipsoid(player.position,sub(target,player.position));
@@ -55,6 +66,18 @@ window.Scooter100=(()=>{
   if(a){a.previous=null;a.blend=1;for(let i=0;i<a.pose.length;i++){const n=a.model.j.nodes[i];a.pose[i]={translation:[...(n.translation||[0,0,0])],rotation:[...(n.rotation||[0,0,0,1])],scale:[...(n.scale||[1,1,1])]};}}
   updateCamera(0,true);updateUI();return true;
  }
+ // Riding into something solid at cruising speed or faster throws the rider
+ // off (fall173): they land beside the ride, which tips over and stays there.
+ function crash(){
+  const id=activeId,v=ride(),at={x:player.position[0],y:player.position[1]-PHYSICS.radii[1],z:player.position[2],yaw:player.yaw};
+  if(!dismount(true))return;
+  v.parked=at;if(v.dockHome)StreetProps128.enable('Ride128 '+id,false);
+  const right=[Math.cos(at.yaw),0,-Math.sin(at.yaw)],side=(player.position[0]-at.x)*right[0]+(player.position[2]-at.z)*right[2];
+  // The ride's local +x is the rider's left: it falls away from where they landed.
+  v.tipped={start:performance.now(),side:side>0?1:-1};
+  if(Math.hypot(player.position[0]-at.x,player.position[2]-at.z)<.05){const back=resolveEllipsoid(player.position,[Math.sin(at.yaw)*.3,0,Math.cos(at.yaw)*.3]);player.position=back.position;}
+  window.Fall173?.start({cause:'ride',snap:true});
+ }
  const walk=advancePlayer;advancePlayer=function(dt,input){if(!mounted)return walk(dt,input);if(state.paused)return;
   braking=brake||keys.has(' ');
   const turbo=input.fast||boost,target=braking?0:input.forward?(turbo?7.5:2.6):input.backward?-1:0,rate=braking?20:target===0?3:4;
@@ -67,13 +90,14 @@ window.Scooter100=(()=>{
   const oldSpeed=state.speed,before=[...player.position];state.speed=Math.abs(speed)/(1.5*PLAYER_SCALE);
   const radii=PHYSICS.radii;PHYSICS.radii=[Math.max(radii[0],.25),radii[1],Math.max(radii[2],.25)];
   try{walk(dt,{forward:speed>.001,backward:speed<-.001,fast:false});}finally{state.speed=oldSpeed;PHYSICS.radii=radii;}
-  if(Math.abs(speed)>.1&&Math.hypot(player.position[0]-before[0],player.position[2]-before[2])<Math.abs(speed)*dt*.15)speed=0;
+  if(Math.abs(speed)>.1&&Math.hypot(player.position[0]-before[0],player.position[2]-before[2])<Math.abs(speed)*dt*.15){if(Math.abs(speed)>=CRASH_SPEED&&window.Fall173?.ready())crashing=true;speed=0;}
   const travelled=Math.hypot(player.position[0]-before[0],player.position[2]-before[2])*Math.sign(speed)/scale();
   for(const w of dataFor(activeId).wheels){const differential=isSegway(activeId)?yawDelta*w.pivot[0]:0;ride().angles[w.name]+=(travelled-differential)/w.radius;}
   const ease=1-Math.exp(-dt*7),moving=Math.min(1,Math.abs(speed)/.8);
   leanX+=((isSegway(activeId)?clamp(speed*.075,-.13,.20):.025*moving)-leanX)*ease;
   leanZ+=((-steer*.19*(isSegway(activeId)&&!braking?Math.max(.45,moving):moving))-leanZ)*ease;
   player.walkAmount=0;
+  if(crashing){crashing=false;crash();}
  };
  const rz=a=>[Math.cos(a),Math.sin(a),0,0,-Math.sin(a),Math.cos(a),0,0,0,0,1,0,0,0,0,1];
  const lean=()=>[Math.round(leanX/ .006)*.006,Math.round(leanZ/ .006)*.006];
@@ -137,7 +161,7 @@ window.Scooter100=(()=>{
  function draw(planes){if(!state.ready||window.FarmScene63?.active)return;if(!loading)init();const time=(window.frameNow164?.()??performance.now())/1000;
   RideDocks128.draw();
   for(const [id,v] of Object.entries(rides)){const r=StreetProps128.matrix('Ride128 '+id,root(id)),on=mounted&&activeId===id;if(!v.parts||!sphereVisible([r[12],r[13]+.3,r[14]],.8,planes))continue;
-   const glow=!on&&StudentProgress99.complete(),pulse=.55+.4*Math.sin(time*3),lit=on&&braking;
+   const glow=!on&&!v.tipped&&StudentProgress99.complete(),pulse=.55+.4*Math.sin(time*3),lit=on&&braking;
    for(const p of v.parts){if(p.batch.hidden128)continue;let model=p.matrix;const w=dataFor(id).wheels.find(w=>w.name===p.name);if(w)model=mm(mm(mm(transform(w.pivot,[1,1,1],v.angles[w.name]),transform(mul(w.pivot,-1))),p.matrix),IDENTITY);
     if(p.name==='Cylinder.018')p.batch.emission=glow?[.05,pulse,.22]:[0,0,0];
     if(p.name==='Cube.017'){p.batch.emission=lit?[3,.015,.015]:[.13,0,0];p.batch.color=lit?[1,.025,.025,1]:[.32,.005,.008,1];}
@@ -154,7 +178,7 @@ window.Scooter100=(()=>{
  function drawLighting(planes){for(const [id,v]of Object.entries(rides)){if(!v.parts)continue;const r=StreetProps128.matrix('Ride128 '+id,root(id));if(!sphereVisible([r[12],r[13]+.3,r[14]],.8,planes))continue;for(const p of v.parts)if(!p.batch.hidden128)drawBatch(p.batch,mm(r,p.matrix));}}
  function handleKey(e,type){if(type==='keyup'&&e.code==='Space')brake=braking=false;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||state.paused)return false;const key=e.key.toLowerCase();if((key==='t'&&(mounted||near()))||(mounted&&(e.code==='Space'||key==='g'))){e.preventDefault();e.stopImmediatePropagation();if(e.code==='Space'){brake=type==='keydown';}else if(type==='keydown'&&!e.repeat&&key==='t'){if(mounted)dismount();else if(!mount()&&!StudentProgress99.complete())toast('Finish all your missions to unlock the '+rides[nearest()].label+'.');}return true;}return false;}
  const stop=()=>{speed=0;leanX=leanZ=steer=0;boost=brake=braking=false;keys.clear();};window.addEventListener('blur',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
- return {preload:init,mount,dismount,pose,handleKey,drawLighting,headlights136,get mounted(){return mounted;},busy,snapshot:()=>({ready:Object.values(rides).every(v=>!!v.parts),error,mounted,activeId,speed,braking,lean:lean(),parked:{...ride().parked},unlocked:StudentProgress99.complete(),poseError,root:root(),rides:Object.fromEntries(Object.entries(rides).map(([id,v])=>[id,{parked:{...v.parked},ready:!!v.parts,error:v.error,wheels:{...v.angles},root:root(id)}]))})};
+ return {preload:init,mount,dismount,crash,pose,handleKey,drawLighting,headlights136,get mounted(){return mounted;},busy,snapshot:()=>({ready:Object.values(rides).every(v=>!!v.parts),error,mounted,activeId,speed,braking,lean:lean(),parked:{...ride().parked},unlocked:StudentProgress99.complete(),poseError,root:root(),rides:Object.fromEntries(Object.entries(rides).map(([id,v])=>[id,{parked:{...v.parked},tipped:!!v.tipped,ready:!!v.parts,error:v.error,wheels:{...v.angles},root:root(id)}]))})};
 })();
 
 window.StudentRewards100=(()=>{
