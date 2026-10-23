@@ -6,7 +6,8 @@
  * to continue it, or "Not you? Start a new journey". Progress saves in the
  * background whenever it changes; the code stays in a chip under the logo,
  * in the Missions panel and on the certificate. Closing the tab asks first
- * and shows the code, unless the student chose "Finish for today".
+ * and shows the code with a reminder to take it, unless the student chose
+ * "Finish for today".
  * Not shown in the studio, to employers, for speed-test links (?diagnose=),
  * or with ?journey=0. */
 window.Journey166=(()=>{
@@ -33,7 +34,8 @@ window.Journey166=(()=>{
 
  // ---- saving ----
  function payload(){return JSON.stringify({code:journey.code,data:collect(),percent:percent()});}
- function setStatus(s){status=s;renderChip();const el=card?.querySelector('[data-status]');if(el)el.textContent=statusText();}
+ // The leaving reminder only mentions saving when something is wrong.
+ function setStatus(s){status=s;renderChip();const el=card?.querySelector('[data-status]');if(el)el.textContent=el.dataset.status==='problems'&&s==='saved'?'':statusText();}
  const statusText=()=>({saved:'Your progress is saved.',saving:'Saving...',offline:'Not saved yet: the fair server can\'t be reached. The game keeps trying.',missing:'This code is no longer on the server. Start a new journey to keep saving.',none:''})[status]||'';
  // PENDING marks changes this computer hasn't sent yet, so a returning student
  // knows whether this computer or the server has the newer progress.
@@ -131,10 +133,15 @@ window.Journey166=(()=>{
  }
  // Returning students skip the tour; a new journey gets it.
  function finishSetup(returning){if(returning)store.set(KEYS.tour,'1');finished=false;ready=!!journey;queue(500);done();}
- function panel(){
+ // leaving: opened as the tab closes, behind the browser's "Leave site?" box,
+ // whose own wording can't be changed.
+ function panel(leaving){
   if(!journey)return;
-  show(h('p',{class:'j-eyebrow'},'Your journey'),h('h2',{},journey.firstName+' '+journey.lastInitial+'.'),codeBox(),
-   h('p',{'data-status':true},statusText()),
+  const head=leaving===true?[h('p',{class:'j-eyebrow'},'Leaving?'),h('h2',{},'Take your code with you'),codeBox(),
+   h('p',{class:'j-warn'},'Write it down or take a photo before you go. Without your code, your progress may be lost.')]
+   :[h('p',{class:'j-eyebrow'},'Your journey'),h('h2',{},journey.firstName+' '+journey.lastInitial+'.'),codeBox()];
+  show(...head,
+   h('p',{'data-status':leaving===true?'problems':'all'},leaving===true&&status==='saved'?'':statusText()),
    h('div',{class:'j-actions'},copyButton(),button('Finish for today',finishToday,'primary'),button('Keep playing',hide)),
    h('p',{class:'j-small'},link('Not you? Switch student',confirmSwitch)));
  }
@@ -154,6 +161,7 @@ window.Journey166=(()=>{
 #journey166 .j-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5cd5e6;margin:0}
 #journey166 h2{font-size:24px;line-height:1.2;margin:6px 0 10px}
 #journey166 p{font-size:14px;line-height:1.55;color:#c8dbe6;margin:0 0 12px}
+#journey166 .j-warn{color:#ffe08a;font-weight:600}
 #journey166 .j-small{font-size:13px;color:#9fb9c8;margin:14px 0 0}
 #journey166 .j-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 #journey166 .j-btn{font:inherit;font-size:15px;font-weight:700;border-radius:10px;padding:12px 16px;cursor:pointer;border:1px solid #5cd5e680;background:#12324a;color:#eef7fd}
@@ -172,7 +180,7 @@ window.Journey166=(()=>{
 #journeyChip166[data-status=offline] i,#journeyChip166[data-status=missing] i{background:#f87171}`;
   document.head.append(css);
   card=h('div',{class:'j-card'});overlay=h('div',{id:'journey166',role:'dialog','aria-modal':'true','aria-label':'Your journey',hidden:true},card);
-  chip=h('button',{id:'journeyChip166',type:'button',title:'Your journey code',onclick:panel,hidden:true});
+  chip=h('button',{id:'journeyChip166',type:'button',title:'Your journey code',onclick:()=>panel(),hidden:true});
   document.body.append(overlay,chip);
  }
  function renderChip(){if(!chip)return;chip.hidden=!journey;if(!journey)return;chip.replaceChildren(h('i',{'aria-hidden':'true'}),'Code '+pretty(journey.code));chip.dataset.status=status;chip.setAttribute('aria-label','Your journey code '+pretty(journey.code)+'. '+statusText());}
@@ -181,12 +189,12 @@ window.Journey166=(()=>{
  StudentProgress99.subscribe(()=>queue());
  setInterval(()=>{if(journey&&ready&&!sending&&payload()!==lastSent)queue(0);},30000);
  addEventListener('pagehide',()=>{if(!journey||!ready)return;const body=payload();if(body!==lastSent)navigator.sendBeacon('/api/journey/save',new Blob([body],{type:'application/json'}));});
- addEventListener('beforeunload',e=>{if(!journey||!ready||finished||skip())return;if(!active)panel();e.preventDefault();e.returnValue='';});
+ addEventListener('beforeunload',e=>{if(!journey||!ready||finished||skip())return;if(!active)panel(true);e.preventDefault();e.returnValue='';});
 
  return {
   // Called once the venue has loaded, before the screen tour.
   begin(next){if(skip()){next();return;}ensureUI();renderChip();onDone=next;if(journey)welcomeBack();else choose();},
-  open:panel,
+  open:()=>panel(),
   get code(){return journey?.code||null;},get prettyCode(){return journey?pretty(journey.code):null;},
   snapshot:()=>({journey,status,finished,active,skipped:skip()})
  };
