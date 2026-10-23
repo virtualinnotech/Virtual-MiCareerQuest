@@ -5,9 +5,10 @@
  * brings everything back. On a computer that already has a journey it offers
  * to continue it, or "Not you? Start a new journey". Progress saves in the
  * background whenever it changes; the code stays in a chip under the logo,
- * in the Missions panel and on the certificate. Closing the tab asks first
- * and shows the code with a reminder to take it, unless the student chose
- * "Finish for today".
+ * in the Missions panel and on the certificate. Heading for the tab's close
+ * button (the pointer leaving through the top of the page) shows the code with
+ * a reminder to take it, and closing the tab asks first, unless the student
+ * chose "Finish for today".
  * Not shown in the studio, to employers, for speed-test links (?diagnose=),
  * or with ?journey=0. */
 window.Journey166=(()=>{
@@ -190,6 +191,16 @@ window.Journey166=(()=>{
  setInterval(()=>{if(journey&&ready&&!sending&&payload()!==lastSent)queue(0);},30000);
  addEventListener('pagehide',()=>{if(!journey||!ready)return;const body=payload();if(body!==lastSent)navigator.sendBeacon('/api/journey/save',new Blob([body],{type:'application/json'}));});
  addEventListener('beforeunload',e=>{if(!journey||!ready||finished||skip())return;if(!active)panel(true);e.preventDefault();e.returnValue='';});
+ // The browser's own "Leave site?" box can't show our words and hides the
+ // page, so remind the student as the pointer heads for the tab's close button
+ // instead: leaving through the top edge, no button held (not a camera drag),
+ // nothing else open, at most every two minutes.
+ let remindedAt=-Infinity;
+ document.addEventListener('mouseout',e=>{
+  if(e.relatedTarget||e.clientY>8||e.buttons||!journey||!ready||finished||active||skip())return;
+  if(document.body.classList.contains('tour-running')||window.MissionUI99?.active||window.StudentRewards100?.active||window.BoothMedia162?.active)return;
+  if(performance.now()-remindedAt<120000)return;remindedAt=performance.now();panel(true);
+ });
 
  return {
   // Called once the venue has loaded, before the screen tour.

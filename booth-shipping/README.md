@@ -213,8 +213,11 @@ computer that already has a journey the screen offers to continue it, or
 changes (and once more when the page closes), but only after the student has
 confirmed who they are, so a shared computer never overwrites a journey that
 was continued somewhere else. The code stays on a chip under the logo, in the
-Missions panel and on the certificate; closing the tab asks first and shows
-the code unless the student chose **Finish for today**.
+Missions panel and on the certificate. When the pointer heads for the tab's
+close button, the game shows "Leaving? Take your code with you" (at most every
+two minutes), and closing the tab asks first, unless the student chose
+**Finish for today**. Browsers don't let a site change the wording of their
+own "Leave site?" box, which is why the reminder comes from the game first.
 
 The `journeys` table (code, first name, last initial, school, progress JSON,
 percent, dates) is created by the Worker on first use, so it needs no
