@@ -6,9 +6,18 @@ the street wall from the real Lyon Street view:
 - the dark glass entrance (black frame, white roof railing) where Lyon Street
   meets the building, with a granite planter of bushes and flowers and five
   flags: POW/MIA, Michigan, the United States, Kent County and Grand Rapids;
-- the dark-paneled DeVos block to the left, with a covered drive-under;
+- the Amway Grand Plaza base to the left: vertical charcoal-blue metal
+  panels, a louvered ribbon window with ten US flags on angled poles, and a
+  canopy (marquee bulbs, round granite columns, lobby with sconces) over a
+  drive-through — entrance lane, the "AMWAY GRAND PLAZA" granite planter,
+  exit lane — with brick driveway aprons across the sidewalk;
+- ten glass floors on top of the hospitality addition, matching the Amway
+  glass tower;
+- a skywalk (stained concrete, dark glass barrel vault with white ribs) over
+  westbridge from the older hotel to the building opposite;
 - the brick hotel tower and the older stone-and-brick hotel to the right,
-  running to the Front Ave corner; a beige hotel tower rises behind the glass.
+  running to the Front Ave corner, where its back wall (past the DeVos
+  front) is finished too; a beige hotel tower rises behind the glass.
 
 `core.js` (loaded before the city) holds the layout. The city loader asks it
 which park pieces to leave out (trees, lawn, benches, bins, park lamps and

@@ -8,11 +8,19 @@ window.WestFrontCore172=(()=>{
  const front=-30.45,ground=-.10;
  // Each block runs from the sidewalk edge back to the existing DeVos wall.
  const blocks={
-  devos:{z:[-13.35,5.6],back:-22.0,height:5.6},
+  // Amway Grand Plaza base: canopy over a drive-through (entrance and exit
+  // lanes either side of the lettered planter), lobby wall at canopy.back.
+  devos:{z:[-13.35,5.6],back:-22.0,height:5.6,canopy:{z:[-9.4,5.0],back:-27.0,soffit:1.4,top:1.64,lanes:[[-7.9,-3.5],[1.4,4.6]],planter:[-3.0,.9],small:[-9.35,-8.3]}},
   entrance:{z:[5.6,14.2],back:-22.0,height:3.6,glass:-29.55},
-  tower:{z:[14.2,20.8],back:-22.0,height:15},
-  hotel:{z:[20.8,36.8],back:-24.0,height:8.6},
-  behind:{x:[-27.4,-23.0],z:[6.4,13.4],height:9.6}
+  tower:{z:[14.2,20.8],back:-24.0,height:15},
+  // Its back wall shows past the DeVos front (z 33.93) and is finished there.
+  hotel:{z:[20.8,36.8],back:-24.0,height:8.6,exposedBack:33.93},
+  behind:{x:[-27.4,-23.0],z:[6.4,13.4],height:9.6},
+  // Ten glass floors on top of the hospitality addition (its roof is 7.06).
+  glassTower:{x:[-29.9,-5.6],z:[-29.8,-13.8],base:7.06,floors:10,floorHeight:1.05},
+  // Skywalk over westbridge from the older hotel to the building opposite.
+  // (between the westbridge streetlights at z 21.3 and 27.8)
+  skywalk:{x:[-36.3,-30.45],z:[25.3,26.5],bottom:2.1,deck:2.72,vault:.42}
  };
  const strip=[-32.8,-13.45,-21.9,37.0];
  // Calder's La Grande Vitesse moves from the corner the hotel now fills to the
@@ -38,7 +46,7 @@ window.WestFrontCore172=(()=>{
  }
  function inside(x,z,margin=0){
   if(z<blocks.devos.z[0]-margin||z>blocks.hotel.z[1]+margin||x<front-margin)return false;
-  const back=z>blocks.tower.z[1]?blocks.hotel.back:blocks.devos.back;return x<=back+margin;
+  const back=z>blocks.entrance.z[1]?-24.0:blocks.devos.back;return x<=back+margin;
  }
  // The park walk ran through the new buildings (and the hospitality
  // addition); its walkers use the sidewalk in front instead. The grove walk
