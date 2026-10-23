@@ -86,6 +86,11 @@ functions/api/manifest.js        GET  -- what the student game reads, edge-cache
 functions/api/admin/fill-demo.js    POST -- {on} fill every open slot with a demo booth, or remove them all
 functions/api/admin/demo-slot.js    POST -- {sector, slotNumber, on} one slot's demo booth on/off
 functions/api/admin/check-booths.js GET  -- every booth in the fair whose file is missing
+functions/api/admin/journeys.js     GET  -- ?q= search student journeys (name, school, code) for a forgotten code
+functions/api/journey/start.js      POST -- new student journey: first name, last initial, school -> code
+functions/api/journey/load.js       GET  -- ?code= a journey's saved progress (Continue my journey)
+functions/api/journey/save.js       POST -- {code, data, percent} auto-save from the game
+functions/_journey.js               journey codes, checks, and the table the Worker creates itself
 functions/api/admin/list-booths.js  GET  -- every slot (incl. email), for the admin page
 functions/api/admin/reset-slot.js   POST -- clear a slot back to open, delete its R2 files
 functions/api/admin/update-slot.js  POST -- fix a typo'd contact email on an existing slot
@@ -140,6 +145,11 @@ one. Demo booths are 30 real booth-editor designs (5 per sector, from
 however many slots use them. Use them to run the full venue before the
 employers ship, then turn Fill off.
 
+**Find a student's code**: students save their progress under a journey
+code (see "Student journeys" below). If one forgets theirs, search by first
+name, school or part of the code, check the school and when they last
+played, and read them the code.
+
 **Booth file check**: every time the slot list loads, the page checks
 that each booth in the fair points at a file that exists. Any that don't
 get a red **file missing** tag and are listed above the table, because
@@ -191,6 +201,36 @@ committing it to `wrangler.toml` would mean the next git-triggered
 deploy re-applies whatever's in that file and silently overwrites the
 real secret. For local `wrangler dev`, create a `.dev.vars` file
 (gitignored) with `ADMIN_KEY=dev-only-change-me` instead.
+
+## Student journeys
+
+When the student fair opens, before the screen tour, students choose **Start
+my journey** (first name, last initial, school; they get a code like
+`K7PQ-2MXD` to write down) or **Continue my journey** (type the code; their
+missions, booth answers and rewards come back and the tour is skipped). On a
+computer that already has a journey the screen offers to continue it, or
+"Not you? Start a new journey". Progress saves in the background whenever it
+changes (and once more when the page closes), but only after the student has
+confirmed who they are, so a shared computer never overwrites a journey that
+was continued somewhere else. The code stays on a chip under the logo, in the
+Missions panel and on the certificate; closing the tab asks first and shows
+the code unless the student chose **Finish for today**.
+
+The `journeys` table (code, first name, last initial, school, progress JSON,
+percent, dates) is created by the Worker on first use, so it needs no
+migration. Journeys nobody has played for 60 days are deleted. Codes have 8
+characters with no 0/O, 1/I/L or U. The game's code is in `journey166/`;
+`?journey=0` on the student link skips the screen.
+
+## Showing the fair on another website
+
+The `/student` link can be embedded in a school or event website with an
+iframe. Anywhere but inside the booth studio it runs as the student fair
+(QA panels hidden, booths from the manifest, journey screen and tour). If the
+browser blocks storage for embedded pages (private windows, some school
+settings), the visit keeps its saves in memory and journey codes still save
+progress to the server. A full-size frame works best, for example
+`<iframe src="https://<your-worker>/student" style="width:100%;height:90vh;border:0" allow="fullscreen"></iframe>`.
 
 ## Dynamic booth capacity
 

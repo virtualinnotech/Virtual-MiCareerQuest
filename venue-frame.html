@@ -1,5 +1,11 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DeVos Place | Architectural Exterior v4.8</title>
+<script>
+// Browsers can block storage for a game shown inside another website (school
+// cookie settings, private windows). Keep this visit's saves in memory then;
+// journey codes still save progress to the server.
+for(const name of ['localStorage','sessionStorage'])try{window[name].getItem('mcq');}catch(e){const m=new Map();try{Object.defineProperty(window,name,{configurable:true,value:{getItem:k=>m.has(String(k))?m.get(String(k)):null,setItem:(k,v)=>{m.set(String(k),String(v));},removeItem:k=>{m.delete(String(k));},clear:()=>m.clear(),key:i=>[...m.keys()][i]??null,get length(){return m.size;}}});}catch(_){}}
+</script>
 <script src="./desktop141/device.js?v=141"></script>
 <link rel="stylesheet" href="./loading155/loading.css?v=158">
 <link rel="preload" as="image" href="./loading155/art/front-entrance.webp">
@@ -10,7 +16,7 @@
 <script src="./hospitality140/core.js?v=143"></script>
 <script src="./hospitality140/runtime.js?v=20261022-pacing164"></script>
 <script src="./farming36/harvest-core.js?v=20261002-utv53"></script>
-<script src="./missions99/core.js?v=20261019-hotel148"></script>
+<script src="./missions99/core.js?v=20261023-journey166"></script>
 <script src="./missions99/guard.js?v=20261022-media162"></script>
 <script src="./missions99/lucide.min.js"></script>
 <script src="./city106/district115.js?v=20261016-street128"></script>
@@ -1643,7 +1649,12 @@ function initVenueShipping(){
  venueLayoutReady.then(()=>shipSend('venue-ready'),()=>{});
 }
 window.initVenueShipping=initVenueShipping;
-const STANDALONE_MODE=window.top===window.self;
+// The booth studio shows this venue inside its own page (with a shipping
+// token, or as a same-site frame). Anywhere else -- opened directly, or shown
+// inside a school or event website -- it is the student fair.
+const STUDIO_MODE=(()=>{if(window.top===window.self)return false;if(typeof window.SHIP_TOKEN==='string')return true;
+ if(/^\/(student|venue\.html)$/i.test(location.pathname))return false;try{return !!window.parent.document;}catch(e){return false;}})();
+const STANDALONE_MODE=!STUDIO_MODE;
 function applyStudentMode(){
  try{document.title='MiCareerQuest — DeVos Place Career Fair';}catch(e){}
  const style=document.createElement('style');
@@ -4434,9 +4445,10 @@ function buildStudentGamification(){
  window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;if(e.key.toLowerCase()==='m'&&!document.body.classList.contains('tour-running')){if(window.MissionUI99?.active)MissionList.close();else MissionList.open();}});
 }
 function revealStudentGamification(){
- if(employerModeParams())return;
+ if(!STANDALONE_MODE||employerModeParams())return;
  $('skillHud').classList.add('visible');$('missionIconBtn').classList.add('visible');$('controlsIconBtn').classList.add('visible');
- StudentTour.begin();
+ // Start or continue a saved journey first; the screen tour follows.
+ if(window.Journey166)Journey166.begin(()=>StudentTour.begin());else StudentTour.begin();
 }
 // Mission credit is awarded by successful challenges and completed booth questionnaires.
 
@@ -4512,11 +4524,12 @@ function revealStudentGamification(){
 <script src="./rivian147/scene.js?v=20261020-driving159"></script>
 <script src="./rivian147/runtime.js?v=20261022-gems164"></script>
 <script src="./ambulance35/indoor-performance154.js?v=20261020-driving154"></script>
-<script src="./missions99/ui.js?v=20261022-media162"></script>
+<script src="./missions99/ui.js?v=20261023-journey166"></script>
+<script src="./journey166/journey.js?v=20261023-journey166"></script>
 <script src="./visitors100/rides103-data.js?v=20261012-rides104"></script>
 <script src="./city106/street128/bike-data.js?v=20261016-street128"></script>
 <script src="./city106/street128/docks.js?v=20261016-materials129"></script>
-<script src="./visitors100/scooter.js?v=20261022-pacing164"></script>
+<script src="./visitors100/scooter.js?v=20261023-journey166"></script>
 <link rel="stylesheet" href="./boothmedia162/media.css?v=20261022-media162">
 <script src="./boothmedia162/media.js?v=20261022-media162"></script>
 <script src="./visitors100/wayfinder103.js?v=20261022-pacing164"></script>

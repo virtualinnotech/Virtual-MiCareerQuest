@@ -58,6 +58,8 @@ td.actions{display:flex;gap:6px;flex-wrap:wrap}td.actions .studioLink{text-decor
 .status{font-size:13px;color:#607380;margin:10px 0}
 .status.error{color:#ae1b2f;font-weight:650}
 .liveRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#journeyQuery{flex:1;min-width:220px;max-width:420px;font:inherit;font-size:14px;padding:8px 10px;border:1px solid #c9d8df;border-radius:8px}
+#journeyTable{margin-top:10px}.jcode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:.06em}
 .badge.locked{background:#fde8eb;color:#ae1b2f}
 .badge.unlocked{background:#e7f4ea;color:#1e7a3c}
 #optProgress{width:100%;max-width:520px;height:10px;margin-top:12px;accent-color:#1e65ae}
@@ -92,6 +94,14 @@ td.demoCell{text-align:center}
 </header>
 <main>
  <div id="summary" class="summary"></div>
+
+ <div class="panel">
+  <h2>Find a student's code</h2>
+  <p class="hint">Students save their progress under a journey code like K7PQ-2MXD and can continue on any computer with it. If one forgets theirs, search by first name, school or part of the code (for example "maria central"), check the school and when they last played, and read them the code. Journeys nobody has played for 60 days are deleted automatically.</p>
+  <form id="journeyForm" class="liveRow"><input id="journeyQuery" type="search" placeholder="First name, school or code..." autocomplete="off" aria-label="Search student journeys"><button type="submit" class="primary">Search</button></form>
+  <div id="journeyStatus" class="status"></div>
+  <table id="journeyTable" hidden><thead><tr><th>Student</th><th>School</th><th>Progress</th><th>Last played</th><th>Code</th></tr></thead><tbody id="journeyRows"></tbody></table>
+ </div>
 
  <div class="panel">
   <h2>Booth editing</h2>
@@ -139,6 +149,17 @@ let adminKey=sessionStorage.getItem('mcqAdminKey')||'';
 let allSlots=[],missingFiles=new Set(),fileCheckRun=0;
 let boothsLocked=null,optimizing=false;
 
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+// Student names and schools are typed by students, so they are escaped.
+async function findJourneys(){
+ setStatus('journeyStatus','Searching...');
+ try{
+  const q=$('journeyQuery').value.trim(),r=await api('/api/admin/journeys?q='+encodeURIComponent(q));
+  $('journeyTable').hidden=!r.journeys.length;
+  $('journeyRows').innerHTML=r.journeys.map(j=>`<tr><td>${esc(j.first_name)} ${esc(j.last_initial)}.</td><td>${esc(j.school)}</td><td>${Number(j.percent)||0}%</td><td>${esc(fmtDate(j.updated_at))}</td><td><span class="jcode">${esc(j.code.slice(0,4))}-${esc(j.code.slice(4))}</span></td></tr>`).join('');
+  setStatus('journeyStatus',r.journeys.length?`${r.journeys.length}${r.journeys.length===50?' (newest)':''} of ${r.total} student journeys.`:q?`No journeys match "${q}".`:'No student journeys yet.');
+ }catch(e){setStatus('journeyStatus',e.message,true);}
+}
 function fmtDate(s){if(!s)return '';try{return new Date(s+'Z').toLocaleString();}catch(e){return s;}}
 
 async function api(path,opts={}){
@@ -242,6 +263,7 @@ async function checkBoothFiles(){
  }catch(e){if(run===fileCheckRun)setStatus('fileCheck','Booth file check failed: '+e.message,true);}
 }
 
+$('journeyForm').addEventListener('submit',e=>{e.preventDefault();findJourneys();});
 $('rows').addEventListener('click',async e=>{
  const tr=e.target.closest('tr');if(!tr)return;
  const sector=tr.dataset.sector,slotNumber=Number(tr.dataset.slot);

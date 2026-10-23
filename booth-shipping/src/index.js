@@ -26,6 +26,10 @@ import * as optimizedUndo from '../functions/api/admin/optimized-undo.js';
 import * as demoSlot from '../functions/api/admin/demo-slot.js';
 import * as checkBooths from '../functions/api/admin/check-booths.js';
 import * as diagnostics from '../functions/api/diagnostics.js';
+import * as journeyStart from '../functions/api/journey/start.js';
+import * as journeyLoad from '../functions/api/journey/load.js';
+import * as journeySave from '../functions/api/journey/save.js';
+import * as adminJourneys from '../functions/api/admin/journeys.js';
 import * as booths from '../functions/booths/[[path]].js';
 import computerOnly from '../../desktop141/device.js';
 
@@ -52,6 +56,10 @@ const ROUTES = [
   { method: 'GET', path: '/api/admin/check-booths', handler: checkBooths.onRequestGet },
   { method: 'GET', path: '/api/diagnostics', handler: diagnostics.onRequestGet },
   { method: 'POST', path: '/api/diagnostics', handler: diagnostics.onRequestPost },
+  { method: 'POST', path: '/api/journey/start', handler: journeyStart.onRequestPost },
+  { method: 'GET', path: '/api/journey', handler: journeyLoad.onRequestGet },
+  { method: 'POST', path: '/api/journey/save', handler: journeySave.onRequestPost },
+  { method: 'GET', path: '/api/admin/journeys', handler: adminJourneys.onRequestGet },
 ];
 
 // The two links given out: /student (the fair) and /vendor (the booth
@@ -110,12 +118,12 @@ export default {
     }
 
     // venue.html (the student "walk the fair" link) is the same ~47MB venue
-    // renderer the studio's own "Walk venue" tab embeds, standing alone at
-    // the top level instead of in an iframe. Same 25MB static-asset limit
-    // problem as design.html, same R2 fix. When it's loaded at the top of
-    // the browsing context (not inside the studio's iframe) its own script
-    // switches into student mode: it hides the employer/QA controls and
-    // fetches /api/manifest itself to place every shipped booth.
+    // renderer the studio's own "Walk venue" tab embeds. Same 25MB
+    // static-asset limit problem as design.html, same R2 fix. Anywhere but
+    // inside the studio -- opened directly, or embedded in a school or event
+    // website -- its own script switches into student mode: it hides the
+    // employer/QA controls and fetches /api/manifest itself to place every
+    // shipped booth.
     if (page === '/venue.html') {
       const object = await env.BOOTHS.get('static/venue.html');
       if (!object) return new Response('venue.html not uploaded to R2 yet.', { status: 404 });

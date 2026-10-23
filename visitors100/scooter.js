@@ -165,5 +165,7 @@ window.StudentRewards100=(()=>{
  document.body.append(dialog);dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
  function check(){if(window.Loading155?.blocked||seen||claimed||!StudentProgress99.complete()||!state.ready||state.paused||MissionUI99.active||Scooter100.busy()||employerModeParams())return;seen=true;save();paused=state.paused;focus=document.activeElement;state.paused=true;keys.clear();if(document.pointerLockElement)document.exitPointerLock();dialog.showModal();}
  StudentProgress99.subscribe(check);setInterval(check,500);
- return {close,get active(){return dialog.open;},claim(){claimed=true;seen=true;save();},cheat(){MissionUI99.close();StudentProgress99.completeForTesting();if(!seen)check();if(!dialog.open)toast('All missions complete. Bikes, scooters, the Segway and the Rivian are unlocked.');},snapshot:()=>({seen,claimed})};
+ return {close,get active(){return dialog.open;},claim(){claimed=true;seen=true;save();},
+  // A saved journey continued on this computer (journey166) brings its own prize state.
+  restore(){try{const s=JSON.parse(localStorage.getItem(KEY));seen=!!s?.seen;claimed=!!s?.claimed;}catch{seen=claimed=false;}},cheat(){MissionUI99.close();StudentProgress99.completeForTesting();if(!seen)check();if(!dialog.open)toast('All missions complete. Bikes, scooters, the Segway and the Rivian are unlocked.');},snapshot:()=>({seen,claimed})};
 })();

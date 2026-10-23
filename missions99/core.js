@@ -39,6 +39,8 @@
    snapshot:()=>JSON.parse(JSON.stringify(s)),get storageOK(){return storageOK;},subscribe(f){listeners.add(f);return()=>listeners.delete(f);},
    progress:m=>progress(s,m),complete:()=>complete(s),
    completeForTesting(){s.testComplete=true;save();},
+   // A saved journey continued on this computer (journey166): replace everything.
+   replace(raw){s=normalize(raw);save();},
    challenge(id){if(!industries.some(m=>m.challenges.some(c=>c[0]===id))||s.challenges[id])return false;s.challenges[id]=true;save();return true;},
    visit(booth,answers){const m=industries.find(m=>m.industry===booth?.industry);if(!m||!clean(booth.id,200)||!clean(booth.name,200)||!Array.isArray(answers)||answers.length!==3||!answers.every(enough))return false;const entry={id:clean(booth.id,200),name:clean(booth.name,200),answers:answers.map(x=>clean(x))},list=s.visits[m.id]||(s.visits[m.id]=[]),i=list.findIndex(v=>v.id===entry.id);if(i<0)list.push(entry);else list[i]=entry;save();return true;},
    reflect(id,answer){if(!industries.some(m=>m.id===id)||!enough(answer))return false;s.reflections[id]=clean(answer);save();return true;},
