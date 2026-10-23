@@ -1,13 +1,18 @@
 /* Reward riding uses the venue's existing swept collision solver and fixed physics step. */
 window.Scooter100=(()=>{
- const S=.4,home=[31.25,1.65];
- const rides={scooter:{label:'Scooter',parked:{x:home[0],z:home[1],yaw:Math.PI/2},parts:null,angles:{},offset:[0,.15,-.12]},segway:{label:'Segway',parked:{x:home[0],z:home[1]+.85,yaw:Math.PI/2},parts:null,angles:{},offset:[0,.12,.025]}};
+ const S=.4;
+ // The prize for finishing every mission: three Segways parked just inside the
+ // front entrance, left of the box office, facing into the Grand Gallery.
+ const SEGWAY_SPOTS=[29.05,29.85,30.65].map(z=>({x:-4.5,z,yaw:-Math.PI/2}));
+ const rides={};SEGWAY_SPOTS.forEach((parked,i)=>{rides['segway-'+(i+1)]={label:'Segway',kind:'segway',parked,parts:null,angles:{},offset:[0,.12,.025]};});
+ places.segways={label:'Segway parking',p:[-3.2,1.29,29.85],yaw:Math.PI/2};
  Object.assign(rides,RideDocks128.rides());
  const dataFor=id=>(rides[id].kind==='bike'?BikeData128:RideData103[rides[id].kind||id]);
- let activeId='scooter',leanX=0,leanZ=0,steer=0,braking=false,tail=null,head136=null,headBody136=null;
+ const isSegway=id=>rides[id]?.kind==='segway';
+ let activeId='segway-1',leanX=0,leanZ=0,steer=0,braking=false,tail=null,head136=null,headBody136=null;
  const ride=()=>rides[activeId];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- let parts=null,loading=false,error=null,ring=null,mounted=false,speed=0,boost=false,brake=false,saved=null,lastUI=0,poseError=[];
+ let loading=false,error=null,ring=null,mounted=false,speed=0,boost=false,brake=false,saved=null,lastUI=0,poseError=[];
  let poseCache=new WeakMap();
  const panel=document.createElement('div');panel.id='scooter100';panel.hidden=true;panel.setAttribute('aria-label','Scooter');document.body.append(panel);
  const icon=name=>lucide.createElement(lucide.icons[name]);
@@ -20,7 +25,7 @@ window.Scooter100=(()=>{
  const busy=()=>window.Rivian147?.mounted||window.Hotel146?.active||!!(window.FarmScene63?.active||window.Forklift34?.mounted||window.Ambulance35?.mounted||window.Farming36?.mounted||window.Robotics37?.active||window.Crane39?.active||window.MRI42?.active||window.Welding43?.active||window.Drone44?.mission||window.PCChallenge66?.active);
  const scale=()=>S*sectorScaleAt(player.position[0],player.position[2]);
  function root(id=activeId){const v=rides[id],parked=v.parked,on=mounted&&id===activeId,pose=on?walkingPose132():player,p=on?[pose.position[0],pose.position[1]-PHYSICS.radii[1],pose.position[2]]:[parked.x,parked.y??floorHeightAt(parked.x,parked.z),parked.z],s=S*sectorScaleAt(p[0],p[2]);return transform(p,[s,s,s],0,(on?pose.yaw:parked.yaw)+Math.PI);}
- const headAnchor136=id=>rides[id].kind==='bike'?[0,1.12,.46]:id==='segway'?[0,1.12,.35]:[0,1.10,.29];
+ const headAnchor136=id=>rides[id].kind==='bike'?[0,1.12,.46]:isSegway(id)?[0,1.12,.35]:[0,1.10,.29];
  function headlights136(){
   if(!mounted||busy())return [];
   const r=root(),a=headAnchor136(activeId),s=Math.hypot(r[8],r[10]);
@@ -35,7 +40,6 @@ window.Scooter100=(()=>{
   const loaded={};
   for(const [id,v] of Object.entries(rides))try{const kind=v.kind||id;loaded[kind]??=await DroneAssets44.load(kind==='bike'?'bike':kind+'103',{base:kind==='bike'?'./city106/street128/':'./visitors100/'});v.parts=loaded[kind].map(p=>({...p,batch:{...p.batch}}));for(const w of dataFor(id).wheels)v.angles[w.name]=0;if(v.dockHome)RideDocks128.registerRide(id,v,root(id));}catch(e){v.error=e.message;error=e.message;console.warn(id,e);}
   await RideDocks128.init();StreetProps128.finish();
-  parts=rides.scooter.parts;
  }
  function mount(id=nearest()){if(mounted||!rides[id]?.parts||!StudentProgress99.complete()||busy()||state.paused||state.overview||state.ghost||!near(id))return false;
   if(StreetProps128.disabled('Ride128 '+id))return false;
@@ -65,10 +69,10 @@ window.Scooter100=(()=>{
   try{walk(dt,{forward:speed>.001,backward:speed<-.001,fast:false});}finally{state.speed=oldSpeed;PHYSICS.radii=radii;}
   if(Math.abs(speed)>.1&&Math.hypot(player.position[0]-before[0],player.position[2]-before[2])<Math.abs(speed)*dt*.15)speed=0;
   const travelled=Math.hypot(player.position[0]-before[0],player.position[2]-before[2])*Math.sign(speed)/scale();
-  for(const w of dataFor(activeId).wheels){const differential=activeId==='segway'?yawDelta*w.pivot[0]:0;ride().angles[w.name]+=(travelled-differential)/w.radius;}
+  for(const w of dataFor(activeId).wheels){const differential=isSegway(activeId)?yawDelta*w.pivot[0]:0;ride().angles[w.name]+=(travelled-differential)/w.radius;}
   const ease=1-Math.exp(-dt*7),moving=Math.min(1,Math.abs(speed)/.8);
-  leanX+=((activeId==='segway'?clamp(speed*.075,-.13,.20):.025*moving)-leanX)*ease;
-  leanZ+=((-steer*.19*(activeId==='segway'&&!braking?Math.max(.45,moving):moving))-leanZ)*ease;
+  leanX+=((isSegway(activeId)?clamp(speed*.075,-.13,.20):.025*moving)-leanX)*ease;
+  leanZ+=((-steer*.19*(isSegway(activeId)&&!braking?Math.max(.45,moving):moving))-leanZ)*ease;
   player.walkAmount=0;
  };
  const rz=a=>[Math.cos(a),Math.sin(a),0,0,-Math.sin(a),Math.cos(a),0,0,0,0,1,0,0,0,0,1];
@@ -89,7 +93,7 @@ window.Scooter100=(()=>{
   for(const [si,side]of ['Left','Right'].entries())for(const limb of ['arm','leg']){
    const end=find(side,limb==='arm'?'Hand':'Foot'),contact=limb==='arm'?find(side,'HandMiddle1'):end,chain=limb==='arm'?[find(side,'ForeArm'),find(side,'Arm')]:[find(side,'Leg'),find(side,'UpLeg')];if(end<0||contact<0||chain.some(i=>i<0))continue;
    const grip=BikeData128.fit?.grip||[.295,1.291,.398];
-   const anchor=ride().kind==='bike'?(limb==='arm'?[si===0?grip[0]:-grip[0],grip[1],grip[2]]:[si===0?.155:-.155,.34,si===0?.10:-.10]):activeId==='segway'?(limb==='arm'?[si===0?.16:-.16,1.24,.323]:[si===0?.15:-.15,.345,-.035]):(limb==='arm'?[si===0?.195:-.195,1.205,.218]:[si===0?.045:-.045,.285,si===0?.055:-.245]),targetWorld=tp(root(),...anchor);
+   const anchor=ride().kind==='bike'?(limb==='arm'?[si===0?grip[0]:-grip[0],grip[1],grip[2]]:[si===0?.155:-.155,.34,si===0?.10:-.10]):isSegway(activeId)?(limb==='arm'?[si===0?.16:-.16,1.24,.323]:[si===0?.15:-.15,.345,-.035]):(limb==='arm'?[si===0?.195:-.195,1.205,.218]:[si===0?.045:-.045,.285,si===0?.055:-.245]),targetWorld=tp(root(),...anchor);
    let target=add(tp(inverse,...targetWorld),correction),handRotation=null;
    if(limb==='arm'){
     const origin=tp(inverse,...tp(root(),0,0,0)),direction=v=>norm(sub(tp(inverse,...tp(root(),...v)),origin)),desired=direction([0,-.2,1]);
@@ -141,14 +145,14 @@ window.Scooter100=(()=>{
    }
    tail.emission=lit?[3,.025,.02]:[.12,0,0];tail.color=lit?[1,.035,.025,1]:[.32,.005,.005,1];
    if(head136){const night=CityLighting131.snapshot().night,hm=mm(r,transform(headAnchor136(id)));head136.emission=on?[4*night,3.7*night,3.1*night]:[0,0,0];drawBatch(headBody136,hm);drawBatch(head136,hm);}
-   for(const x of id==='segway'?[-.22,.22]:[0])drawBatch(tail,mm(r,transform([x,id==='segway'?.23:.345,id==='segway'?-.19:-.535])));
+   for(const x of isSegway(id)?[-.22,.22]:[0])drawBatch(tail,mm(r,transform([x,isSegway(id)?.23:.345,isSegway(id)?-.19:-.535])));
    if(glow&&ring){ring.emission=[.04,.35+pulse,.15];const s=1+.09*Math.sin(time*3);drawBatch(ring,mm(r,transform([0,0,0],[s,1,s])));}
   }
   if(performance.now()-lastUI>120){lastUI=performance.now();updateUI();}
  }
  const prior=RobotExhibit20.draw;RobotExhibit20.draw=function(planes){prior.call(this,planes);draw(planes);};
  function drawLighting(planes){for(const [id,v]of Object.entries(rides)){if(!v.parts)continue;const r=StreetProps128.matrix('Ride128 '+id,root(id));if(!sphereVisible([r[12],r[13]+.3,r[14]],.8,planes))continue;for(const p of v.parts)if(!p.batch.hidden128)drawBatch(p.batch,mm(r,p.matrix));}}
- function handleKey(e,type){if(type==='keyup'&&e.code==='Space')brake=braking=false;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||state.paused)return false;const key=e.key.toLowerCase();if((key==='t'&&(mounted||near()))||(mounted&&(e.code==='Space'||key==='g'))){e.preventDefault();e.stopImmediatePropagation();if(e.code==='Space'){brake=type==='keydown';}else if(type==='keydown'&&!e.repeat&&key==='t'){if(mounted)dismount();else mount();}return true;}return false;}
+ function handleKey(e,type){if(type==='keyup'&&e.code==='Space')brake=braking=false;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||state.paused)return false;const key=e.key.toLowerCase();if((key==='t'&&(mounted||near()))||(mounted&&(e.code==='Space'||key==='g'))){e.preventDefault();e.stopImmediatePropagation();if(e.code==='Space'){brake=type==='keydown';}else if(type==='keydown'&&!e.repeat&&key==='t'){if(mounted)dismount();else if(!mount()&&!StudentProgress99.complete())toast('Finish all your missions to unlock the '+rides[nearest()].label+'.');}return true;}return false;}
  const stop=()=>{speed=0;leanX=leanZ=steer=0;boost=brake=braking=false;keys.clear();};window.addEventListener('blur',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
  return {preload:init,mount,dismount,pose,handleKey,drawLighting,headlights136,get mounted(){return mounted;},busy,snapshot:()=>({ready:Object.values(rides).every(v=>!!v.parts),error,mounted,activeId,speed,braking,lean:lean(),parked:{...ride().parked},unlocked:StudentProgress99.complete(),poseError,root:root(),rides:Object.fromEntries(Object.entries(rides).map(([id,v])=>[id,{parked:{...v.parked},ready:!!v.parts,error:v.error,wheels:{...v.angles},root:root(id)}]))})};
 })();
@@ -157,15 +161,17 @@ window.StudentRewards100=(()=>{
  const KEY='mcqScooterReward_v1';let seen=false,claimed=false,paused=false,focus=null;
  try{const s=JSON.parse(localStorage.getItem(KEY));seen=!!s?.seen;claimed=!!s?.claimed;}catch{}
  const dialog=document.createElement('dialog');dialog.id='reward100';dialog.setAttribute('aria-labelledby','rewardTitle100');dialog.append(lucide.createElement(lucide.icons.Gift));
- const title=document.createElement('h2');title.id='rewardTitle100';title.textContent='Please visit the information booth for your prize.';dialog.append(title);
+ const title=document.createElement('h2');title.id='rewardTitle100';title.textContent='You finished every mission! Your prize: ride a Segway.';dialog.append(title);
+ const where=document.createElement('p');where.textContent='Three Segways are parked by the box office, just inside the front entrance. Walk up to one and press T to ride.';dialog.append(where);
  const actions=document.createElement('div');actions.className='reward-actions';dialog.append(actions);
  function save(){try{localStorage.setItem(KEY,JSON.stringify({seen,claimed}));}catch{}}
  function close(){if(!dialog.open)return;dialog.close();state.paused=paused;keys.clear();focus?.focus?.();}
- for(const [text,fn]of [['Visit information booth',()=>{close();HubGuide.visit();}],['Later',close]]){const b=document.createElement('button');b.textContent=text;b.onclick=fn;actions.append(b);}
+ function visitSegways(){close();if(Scooter100.busy()){toast('Leave the current challenge first, then find the Segways by the box office.');return;}MissionUI99.close();teleport('segways');toast('Walk up to a Segway and press T to ride.');}
+ for(const [text,fn]of [['Take me to the Segways',visitSegways],['Later',close]]){const b=document.createElement('button');b.textContent=text;b.onclick=fn;actions.append(b);}
  document.body.append(dialog);dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
  function check(){if(window.Loading155?.blocked||seen||claimed||!StudentProgress99.complete()||!state.ready||state.paused||MissionUI99.active||Scooter100.busy()||employerModeParams())return;seen=true;save();paused=state.paused;focus=document.activeElement;state.paused=true;keys.clear();if(document.pointerLockElement)document.exitPointerLock();dialog.showModal();}
  StudentProgress99.subscribe(check);setInterval(check,500);
  return {close,get active(){return dialog.open;},claim(){claimed=true;seen=true;save();},
   // A saved journey continued on this computer (journey166) brings its own prize state.
-  restore(){try{const s=JSON.parse(localStorage.getItem(KEY));seen=!!s?.seen;claimed=!!s?.claimed;}catch{seen=claimed=false;}},cheat(){MissionUI99.close();StudentProgress99.completeForTesting();if(!seen)check();if(!dialog.open)toast('All missions complete. Bikes, scooters, the Segway and the Rivian are unlocked.');},snapshot:()=>({seen,claimed})};
+  restore(){try{const s=JSON.parse(localStorage.getItem(KEY));seen=!!s?.seen;claimed=!!s?.claimed;}catch{seen=claimed=false;}},cheat(){MissionUI99.close();StudentProgress99.completeForTesting();if(!seen)check();if(!dialog.open)toast('All missions complete. The Segways, bikes, scooters and the Rivian are unlocked.');},snapshot:()=>({seen,claimed})};
 })();

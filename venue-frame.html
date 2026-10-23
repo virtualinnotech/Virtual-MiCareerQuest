@@ -2611,11 +2611,11 @@ function updateHud(){if(window.HubGuide)HubGuide.updatePrompt();
  $('stats').textContent=`${state.modelStats.colliderObjects||0} collision objects / ${state.modelStats.explicitHiddenColliders||0} hidden colliders / ${state.modelStats.skylineBuildings||0} city buildings / ${state.modelStats.schoolBuses||0} buses / animated staff / no gems`;
 }
 function readInput(){return{forward:keys.has('w')||keys.has('arrowup'),backward:keys.has('s')||keys.has('arrowdown'),left:keys.has('a')||keys.has('arrowleft'),right:keys.has('d')||keys.has('arrowright'),fast:keys.has('shift'),up:keys.has('e'),down:keys.has('q')};}
-window.addEventListener('keydown',e=>{if(window.CharacterInspector?.active){if(e.key==='Escape')CharacterInspector.close();return;}if(window.HubGuide?.snapshot().dialogOpen)return;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const k=e.key.toLowerCase();if(state.overview&&['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k))teleport(lastPlace.startsWith('information-hub')?'information-hub':((lastPlace.startsWith('shipped-')||lastPlace.startsWith('discovery-'))?lastPlace:(lastPlace==='exteriorRear'?'river':'entrance')));if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','q','e',' '].includes(k))e.preventDefault();keys.add(k);if(e.repeat)return;if(k==='escape')keys.clear();
- // Developer shortcuts (collider view, walk through walls, camera, reset,
- // report, help, numbered places) work only in the booth studio.
+window.addEventListener('keydown',e=>{if(window.CharacterInspector?.active){if(e.key==='Escape')CharacterInspector.close();return;}if(window.HubGuide?.snapshot().dialogOpen)return;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const k=e.key.toLowerCase();if(state.overview&&['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k))teleport(lastPlace.startsWith('information-hub')?'information-hub':((lastPlace.startsWith('shipped-')||lastPlace.startsWith('discovery-'))?lastPlace:(lastPlace==='exteriorRear'?'river':'entrance')));if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','q','e',' '].includes(k))e.preventDefault();keys.add(k);if(e.repeat)return;if(k==='escape')keys.clear();if(k==='v')toggle('firstPerson');
+ // Developer shortcuts (collider view, walk through walls, reset, report,
+ // help, numbered places) work only in the booth studio.
  if(STANDALONE_MODE)return;
- if(k==='c')toggle('debug');if(k==='v')toggle('firstPerson');if(k==='g')toggle('ghost');if(k==='r'){state.ghost=false;teleport(lastPlace,true);}if(k==='p')exportReport();if(k==='h')$('help').open=!$('help').open;const placeNames=['entrance','gallery','hall','it','stairs','balcony','river','agriInner','agriOuter'];if(k>='1'&&k<='9')teleport(placeNames[+k-1],true);});
+ if(k==='c')toggle('debug');if(k==='g')toggle('ghost');if(k==='r'){state.ghost=false;teleport(lastPlace,true);}if(k==='p')exportReport();if(k==='h')$('help').open=!$('help').open;const placeNames=['entrance','gallery','hall','it','stairs','balcony','river','agriInner','agriOuter'];if(k>='1'&&k<='9')teleport(placeNames[+k-1],true);});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();pointer=null;});document.addEventListener('visibilitychange',()=>{keys.clear();accumulator=0;lastTime=performance.now();});
 let pointer=null;canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('pointerdown',e=>{canvas.focus();canvas.setPointerCapture(e.pointerId);pointer={x:e.clientX,y:e.clientY};});canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
 canvas.addEventListener('pointermove',e=>{if(!pointer)return;const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;pointer={x:e.clientX,y:e.clientY};if(state.overview){const t=state.overview.target,d=sub(state.overview.camera,t),r=len(d),a=Math.atan2(d[0],d[2])-dx*.004,ph=Math.max(.05,Math.min(1.45,Math.asin(d[1]/r)+dy*.003));state.overview.camera=add(t,[r*Math.cos(ph)*Math.sin(a),r*Math.sin(ph),r*Math.cos(ph)*Math.cos(a)]);updateCamera(0,true);return;}if(state.firstPerson)player.yaw-=dx*.004;else state.orbitYaw-=dx*.004;state.pitch=Math.max(-.65,Math.min(.85,state.pitch+(state.firstPerson?-1:1)*dy*.003));});
@@ -4533,11 +4533,11 @@ function revealStudentGamification(){
 <script src="./visitors100/rides103-data.js?v=20261012-rides104"></script>
 <script src="./city106/street128/bike-data.js?v=20261016-street128"></script>
 <script src="./city106/street128/docks.js?v=20261016-materials129"></script>
-<script src="./visitors100/scooter.js?v=20261023-journey166"></script>
+<script src="./visitors100/scooter.js?v=20261023-segways168"></script>
 <link rel="stylesheet" href="./boothmedia162/media.css?v=20261022-media162">
 <script src="./boothmedia162/media.js?v=20261022-media162"></script>
 <script src="./visitors100/wayfinder103.js?v=20261022-pacing164"></script>
-<link rel="stylesheet" href="./visitors100/rewards.css?v=20261019-hospitality141">
+<link rel="stylesheet" href="./visitors100/rewards.css?v=20261023-segways168">
 <script src="./loading155/world.js?v=20261021-crash162"></script>
 <script>/* Self-running speed test, only for links with ?diagnose=<id>. */if(/[?&]diagnose=/.test(location.search)){const s=document.createElement('script');s.src='./diagnose165/diagnose.js?v=166';document.body.append(s);}</script>
 </body></html>
